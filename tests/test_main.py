@@ -10,9 +10,6 @@ import threading
 from rich.pretty import pprint
 pprint = partial(pprint, max_length=500)
 
-import pwsh
-from pwsh import PowerShell
-
 here = Path(__file__).resolve().parent
 data_dir = here/"data"
 
@@ -21,8 +18,13 @@ class PowerShellTestCase:#(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps = PowerShell()
+        import pwsh
+        cls.ps = pwsh.ps
         cls.lock = threading.Lock()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.ps = None
 
     def setUp(self):
         self.lock.acquire()
