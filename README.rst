@@ -88,4 +88,4 @@ Authors
 .. |respository| replace:: https://github.com/karpierz/pwsh.git
 .. _Development page: https://github.com/karpierz/pwsh
 .. _PyPI record: https://pypi.org/project/pwsh/
-.. _Documentation: https://pw_sh.readthedocs.io/
+.. _Documentation: https://pw-sh.readthedocs.io/
