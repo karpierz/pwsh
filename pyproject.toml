@@ -7,7 +7,7 @@ requires = ['setuptools>=75.3.0', 'wheel>=0.44.0', 'packaging>=24.1.0', 'tox>=4.
 
 [project]
 name        = 'pwsh'
-version     = '0.0.0'
+version     = '0.1.0'
 description = 'Provides API for PowerShell.'
 urls.Homepage      = 'https://pypi.org/project/pwsh/'
 urls.Documentation = 'https://pwsh.readthedocs.io/'
@@ -50,7 +50,7 @@ dependencies = [
     # others
     'nocasedict>=2.0.4',
     'atpublic>=5.0.0',
-    'zope.proxy>=6.1',
+    'zope.proxy>=6.1.0',
     'pythonnet>=3.0.4',
 ]
 dynamic = ['readme']
