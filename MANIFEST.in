@@ -1,0 +1,20 @@
+# Copyright (c) 2024 Adam Karpierz
+# SPDX-License-Identifier: Zlib
+
+include README.rst
+include CHANGES.rst
+include LICENSE
+include pyproject.toml
+include .readthedocs.yml
+
+prune arch
+
+graft docs
+
+graft src
+
+graft tests
+
+global-exclude \#* \#*/**
+global-exclude .build .build/** .build.* .build.*/**
+global-exclude *.py[cod] __pycache__
