@@ -3,7 +3,7 @@
 
 __all__ = ('issubtype', 'issequence', 'isiterable', 'remove_all')
 
-from typing import Any, Sequence, Iterable, Tuple, List, Dict
+from typing import Any, Sequence, Iterable, List
 from collections import abc
 try:
     import clr
@@ -18,13 +18,13 @@ def issubtype(x: Any, t: Any) -> bool:
 
 
 def issequence(x: Any) -> bool:
-    return (isinstance(x, (Sequence, abc.Sequence)) and
-            not isinstance(x, (bytes, str, String)))
+    return (isinstance(x, (Sequence, abc.Sequence))
+            and not isinstance(x, (bytes, str, String)))
 
 
 def isiterable(x: Any) -> bool:
-    return (isinstance(x, (Iterable, abc.Iterable)) and
-            not isinstance(x, (bytes, str, String)))
+    return (isinstance(x, (Iterable, abc.Iterable))
+            and not isinstance(x, (bytes, str, String)))
 
 
 def remove_all(list: List, value: Any) -> None:

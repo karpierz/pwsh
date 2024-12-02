@@ -17,8 +17,8 @@ from System.Collections import Hashtable
 clr.AddReference("System.Management.Automation")
 clr.AddReference("Microsoft.Management.Infrastructure")
 from System.Management.Automation import PSObject, PSCustomObject
-#from System.Management.Automation.Language import Parser
-#from Microsoft.Management.Infrastructure import *
+# from System.Management.Automation.Language import Parser
+# from Microsoft.Management.Infrastructure import *
 
 from public import public
 from zope.proxy import ProxyBase, non_overridable

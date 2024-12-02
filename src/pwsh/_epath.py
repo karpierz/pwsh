@@ -1,16 +1,16 @@
 # Copyright (c) 2016 Adam Karpierz
 # SPDX-License-Identifier: Zlib
 
+from __future__ import annotations
+
 __all__ = ('Path',)
 
-from typing import Optional, Union
 import sys
 import os
 import re
 import stat
 import shutil
 import tempfile
-import itertools
 import pathlib
 import hashlib
 import contextlib
@@ -176,7 +176,7 @@ class Path(pathlib.Path):
     def unpack_archive(self, extract_dir: pathlib.Path = None, *, format: str = None):
         return shutil.unpack_archive(self, extract_dir, format)
 
-    def sed_inplace(self, pattern: Union[str, re.Pattern], repl: str, *, flags=0):
+    def sed_inplace(self, pattern: str | re.Pattern, repl: str, *, flags=0):
         """
         Perform the pure-Python equivalent of in-place `sed` substitution: e.g.,
         `sed -i -e 's/'${pattern}'/'${repl}' "${filename}"`.
