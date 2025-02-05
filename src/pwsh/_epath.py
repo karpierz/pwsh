@@ -24,36 +24,36 @@ class Path(pathlib.Path):
                         pathlib.PosixPath)._flavour
         return super().__new__(cls, *args, **kwargs)
 
-    if sys.version_info[:2] < (3,8):
+    if sys.version_info[:2] < (3, 8):
         def rename(self, target):
             super().rename(target)
             return self.__class__(target)
 
-    if sys.version_info[:2] < (3,8):
+    if sys.version_info[:2] < (3, 8):
         def replace(self, target):
             super().replace(target)
             return self.__class__(target)
 
-    if sys.version_info[:2] < (3,9):
+    if sys.version_info[:2] < (3, 9):
         def is_relative_to(self, other):
             try:
                 self.relative_to(other)
                 return True
             except ValueError:
                 return False
-    elif sys.version_info[:2] < (3,12):
+    elif sys.version_info[:2] < (3, 12):
         def is_relative_to(self, other):
             return super().is_relative_to(other)
 
-    if sys.version_info[:2] < (3,12):
+    if sys.version_info[:2] < (3, 12):
         def relative_to(self, other):
             return super().relative_to(other)
 
-    if sys.version_info[:2] < (3,9):
+    if sys.version_info[:2] < (3, 9):
         def with_stem(self, stem):
             return self.with_name(stem + self.suffix)
 
-    if sys.version_info[:2] < (3,10):
+    if sys.version_info[:2] < (3, 10):
         def hardlink_to(self, target):
             if not hasattr(os, "link"):
                 raise NotImplementedError("os.link() not available on this system")
@@ -97,10 +97,10 @@ class Path(pathlib.Path):
         def _is_real_link(self):
             try:
                 st = os.lstat(str(self))
-                return bool(stat.S_ISLNK(st.st_mode) or
-                            (st.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
-                            and (not hasattr(os.stat_result, "st_reparse_tag")
-                            or st.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT)))
+                return bool(stat.S_ISLNK(st.st_mode)
+                            or (st.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+                                and (not hasattr(os.stat_result, "st_reparse_tag")
+                                     or st.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT)))
             except OSError:
                 return False
     else:
@@ -173,14 +173,14 @@ class Path(pathlib.Path):
         "blake2s": hashlib.blake2s,
     }
 
-    def unpack_archive(self, extract_dir: pathlib.Path = None, *, format: str = None):
+    def unpack_archive(self, extract_dir: pathlib.Path = None, *,
+                       format: str = None):  # noqa: A002
+        """Unpack an archive."""
         return shutil.unpack_archive(self, extract_dir, format)
 
     def sed_inplace(self, pattern: str | re.Pattern, repl: str, *, flags=0):
-        """
-        Perform the pure-Python equivalent of in-place `sed` substitution: e.g.,
-        `sed -i -e 's/'${pattern}'/'${repl}' "${filename}"`.
-        """
+        """Perform the pure-Python equivalent of in-place `sed` substitution: e.g., \
+        `sed -i -e 's/'${pattern}'/'${repl}' "${filename}"`."""
         # For efficiency, precompile the passed regular expression.
         if not isinstance(pattern, re.Pattern): pattern = re.compile(pattern, flags)
 

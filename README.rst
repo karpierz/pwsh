@@ -25,7 +25,7 @@ Prerequisites:
 + Python 3.9 or higher
 
   * https://www.python.org/
-  * ATTENTION: currently works and tested only for Windows.
+  * ATTENTION: currently works and is only tested under Windows.
 
 + pip and setuptools
 
@@ -84,7 +84,7 @@ Authors
 
 .. |package| replace:: pwsh
 .. |package_bold| replace:: **pwsh**
-.. |copyright| replace:: Copyright (c) 2024-2024 Adam Karpierz
+.. |copyright| replace:: Copyright (c) 2024-2025 Adam Karpierz
 .. |respository| replace:: https://github.com/karpierz/pwsh.git
 .. _Development page: https://github.com/karpierz/pwsh
 .. _PyPI record: https://pypi.org/project/pwsh/

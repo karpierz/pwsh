@@ -14,7 +14,7 @@ here = Path(__file__).resolve().parent
 data_dir = here/"data"
 
 
-class PowerShellTestCase:#(unittest.TestCase):
+class PowerShellTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -31,3 +31,6 @@ class PowerShellTestCase:#(unittest.TestCase):
 
     def tearDown(self):
         self.lock.release()
+
+    def test_main(self):
+        pass

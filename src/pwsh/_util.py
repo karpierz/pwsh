@@ -27,5 +27,5 @@ def isiterable(x: Any) -> bool:
             and not isinstance(x, (bytes, str, String)))
 
 
-def remove_all(list: List, value: Any) -> None:
+def remove_all(list: List, value: Any) -> None:  # noqa: A002
     list[:] = (item for item in list if item != value)

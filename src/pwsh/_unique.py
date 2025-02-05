@@ -1,9 +1,11 @@
 # Copyright (c) 2012 Adam Karpierz
 # SPDX-License-Identifier: Zlib
 
+from __future__ import annotations
+
 __all__ = ('unique', 'iter_unique')
 
-from typing import Any, Optional, Callable, List
+from typing import Any, Callable, List
 from collections.abc import Iterable, Iterator
 from itertools import filterfalse
 
@@ -14,7 +16,7 @@ def unique(iterable: Iterable) -> List:
 
 
 def iter_unique(iterable: Iterable,
-                key: Optional[Callable[[Any], Any]] = None) -> Iterator:
+                key: Callable[[Any], Any] | None = None) -> Iterator:
     # Borroweed from: https://docs.python.org/3/library/itertools.html
     """List unique elements, preserving order. \
     Remember all elements ever seen."""

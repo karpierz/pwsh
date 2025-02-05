@@ -1,53 +1,54 @@
 # Copyright (c) 2012 Adam Karpierz
 # SPDX-License-Identifier: Zlib
 
-from typing import Optional, Tuple, List, Dict
+from typing import Dict
 import sys
 import os
 import pathlib
 import contextlib
 from enum import IntEnum
 from collections import defaultdict
-sys.path.append(str(pathlib.Path(__file__).resolve().parent/"lib"))
 import clr
 import System
-from System import Array, Object, String, Int32, Int64
 from System.Collections.Generic import Dictionary
 from System.Collections import Hashtable
-clr.AddReference("System.Management.Automation")
-clr.AddReference("Microsoft.Management.Infrastructure")
-from System.Management.Automation import PSObject, PSCustomObject
-# from System.Management.Automation.Language import Parser
-# from Microsoft.Management.Infrastructure import *
 
 from public import public
-from zope.proxy import ProxyBase, non_overridable
-from zope.proxy import getProxiedObject, setProxiedObject
+from zope.proxy import ProxyBase, non_overridable          # noqa: F401
+from zope.proxy import getProxiedObject, setProxiedObject  # noqa: F401
 
 from ._adict   import adict, defaultadict
 from ._epath   import Path
 from ._modpath import module_path as _mpath
-from ._run     import run
-from ._util    import issubtype, issequence, isiterable
+
+sys.path.append(str(pathlib.Path(__file__).resolve().parent/"lib"))
+clr.AddReference("System.Management.Automation")
+clr.AddReference("Microsoft.Management.Infrastructure")
+from System.Management.Automation import PSObject, PSCustomObject  # noqa: E402
+# from System.Management.Automation.Language import Parser         # noqa: E402
+# from Microsoft.Management.Infrastructure import *                # noqa: E402
 
 public(adict        = adict)
 public(defaultadict = defaultadict)
 public(Path         = Path)
 
+public(PSObject       = PSObject)
+public(PSCustomObject = PSCustomObject)
+
+
 @public
 def module_path(*args, **kwargs):
     return Path(_mpath(*args, level=kwargs.pop("level", 1) + 1, **kwargs))
-
-public(PSObject       = PSObject)
-public(PSCustomObject = PSCustomObject)
 
 
 class PSCustomObjectProxy(ProxyBase):
 
     def __getattr__(self, name):
+        """???"""
         return self.Members[name].Value
 
     def __getitem__(self, key):
+        """???"""
         return self.Members[key].Value
 
 
@@ -59,32 +60,38 @@ class Env(adict):
                  "ProgramData", "APPDATA", "UserProfile", "HOME")}
 
     def __getitem__(self, key):
+        """???"""
         value = super().get("_inst").Get_Content(Path=rf"env:\{key}", EA="0")
         if not value: return None
         return Path(value[0]) if key.lower() in Env.path_keys else value[0]
 
     def __setitem__(self, key, value):
+        """???"""
         if value is None:
             super().get("_inst").Set_Content(Path=rf"env:\{key}", Value=value)
         else:
             super().get("_inst").Set_Content(Path=rf"env:\{key}", Value=value)
 
 
+@public
 class CmdLet:
 
     def __init__(self, name: str, *,
                  flatten_result: bool = False,
                  customize_result = lambda self, result: result):
+        """???"""
         self.name  = name
         self._inst = None
         self._flat = flatten_result
         self._cust = customize_result
 
     def __get__(self, instance, owner):
+        """???"""
         self._inst = instance
         return self
 
     def __call__(self, **kwargs):
+        """???"""
         result = self._inst.cmd(self.name, **kwargs)
         if self._flat: result = self._inst.flatten_result(result)
         return self._cust(self._inst, result)
@@ -105,9 +112,11 @@ class PowerShell(ProxyBase):
         return self
 
     def __init__(self, obj=None):
+        """???"""
         super().__init__(getProxiedObject(self) if obj is None else obj)
 
-    Exception = Exception
+    class Exception(Exception):  # noqa: A001,N818
+        """PowerShell error."""
 
     def Throw(self, expression=None):
         if expression is not None:
@@ -288,7 +297,8 @@ class PowerShell(ProxyBase):
             def FullName(self) -> str:
                 ad_parts = []
                 with contextlib.suppress(Exception):
-                    user_info = self._current_user_data(self._EXTENDED_NAME_FORMAT.NameFullyQualifiedDN)
+                    user_info = self._current_user_data(
+                                    self._EXTENDED_NAME_FORMAT.NameFullyQualifiedDN)
                     ad_parts  = [part.replace("\0", ",").strip().partition("=")
                                  for part in user_info.replace(r"\,", "\0").split(",")]
                 full_name = next((value.strip() for key, sep, value in ad_parts
@@ -352,10 +362,12 @@ class PowerShell(ProxyBase):
     Invoke_Command = CmdLet("Invoke-Command")
 
     _ForEach_Object = CmdLet("ForEach-Object")
+
     def ForEach_Object(self, InputObject, **kwargs):
         return self._ForEach_Object(InputObject=InputObject, **kwargs)
 
     _Where_Object = CmdLet("Where-Object")
+
     def Where_Object(self, InputObject, **kwargs):
         return self._Where_Object(InputObject=InputObject, **kwargs)
 
@@ -399,6 +411,7 @@ class PowerShell(ProxyBase):
     Clear_ItemProperty  = CmdLet("Clear-ItemProperty",  flatten_result=True)
 
     _Get_ItemPropertyValue = CmdLet("Get-ItemPropertyValue")
+
     def Get_ItemPropertyValue(self, **kwargs):
         return (self._Get_ItemPropertyValue(**kwargs)
                 if self.Get_ItemProperty(**kwargs) else [])
@@ -493,38 +506,47 @@ class PowerShell(ProxyBase):
     Clear_RecycleBin = CmdLet("Clear-RecycleBin")
 
     _Write_Host = CmdLet("Write-Host", flatten_result=True)
+
     def Write_Host(self, Object, **kwargs):
         return self._Write_Host(Object=Object, **kwargs)
 
     _Write_Information = CmdLet("Write-Information", flatten_result=True)
+
     def Write_Information(self, Msg, **kwargs):
         return self._Write_Information(Msg=Msg, **kwargs)
 
     _Write_Warning = CmdLet("Write-Warning", flatten_result=True)
+
     def Write_Warning(self, Msg, **kwargs):
         return self._Write_Warning(Msg=Msg, **kwargs)
 
     _Write_Error = CmdLet("Write-Error", flatten_result=True)
+
     def Write_Error(self, Msg, **kwargs):
         return self._Write_Error(Msg=Msg, **kwargs)
 
     _Write_Verbose = CmdLet("Write-Verbose", flatten_result=True)
+
     def Write_Verbose(self, Msg, **kwargs):
         return self._Write_Verbose(Msg=Msg, **kwargs)
 
     _Write_Debug = CmdLet("Write-Debug", flatten_result=True)
+
     def Write_Debug(self, Msg, **kwargs):
         return self._Write_Debug(Msg=Msg, **kwargs)
 
     _Write_Progress = CmdLet("Write-Progress", flatten_result=True)
+
     def Write_Progress(self, Activity, **kwargs):
         return self._Write_Progress(Activity=Activity, **kwargs)
 
     _Write_Output = CmdLet("Write-Output", flatten_result=True)
+
     def Write_Output(self, InputObject, **kwargs):
         return self._Write_Output(InputObject=InputObject, **kwargs)
 
     _Read_Host = CmdLet("Read-Host", flatten_result=True)
+
     def Read_Host(self, Prompt, **kwargs):
         if Prompt is None:
             return self._Read_Host(**kwargs)
@@ -639,18 +661,18 @@ class PowerShell(ProxyBase):
     def _customize_param(val):
         if isinstance(val, os.PathLike):
             return str(val)
-        #elif isinstance(val, Dict):
-        #    return PowerShell._customize_dict(val)
+        # elif isinstance(val, Dict):
+        #     return PowerShell._customize_dict(val)
         else:
             return val
 
     @staticmethod
-    def _customize_dict(dict):
-        dict = dict.copy()
-        for key, val in dict.items():
+    def _customize_dict(dic):
+        dic = dic.copy()
+        for key, val in dic.items():
             if isinstance(val, os.PathLike):
-                dict[key] = str(val)
-        return dict
+                dic[key] = str(val)
+        return dic
 
     def _customize_result(self, item):
         if isinstance(item.BaseObject, PSCustomObject):
