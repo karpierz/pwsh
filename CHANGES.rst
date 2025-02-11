@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.1 (2025-02-10)
+------------------
+= Add reference to the System.ServiceProcess
+
 0.2.0 (2025-02-02)
 ------------------
 - Copyright year update.

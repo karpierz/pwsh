@@ -21,6 +21,7 @@ from ._adict   import adict, defaultadict
 from ._epath   import Path
 from ._modpath import module_path as _mpath
 
+clr.AddReference("System.ServiceProcess")
 sys.path.append(str(pathlib.Path(__file__).resolve().parent/"lib"))
 clr.AddReference("System.Management.Automation")
 clr.AddReference("Microsoft.Management.Infrastructure")
