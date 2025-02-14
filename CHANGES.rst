@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.3 (2025-02-14)
+------------------
+- Setup (dependencies) update.
+
 0.2.2 (2025-02-10)
 ------------------
 - Add reference to the System.ServiceProcess
