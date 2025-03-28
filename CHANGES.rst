@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.6 (2025-03-25)
+------------------
+- Add LocalApplicationDataPath property.
+
 0.2.5 (2025-03-20)
 ------------------
 - Add support for PyPy 3.11

@@ -254,6 +254,12 @@ class PowerShell(ProxyBase):
         return Path(result) if result is not None else None
 
     @property
+    def LocalApplicationDataPath(self) -> Path:
+        kind = System.Environment.SpecialFolder.LocalApplicationData
+        result = System.Environment.GetFolderPath(kind)
+        return Path(result) if result is not None else None
+
+    @property
     def ApplicationDataPath(self) -> Path:
         kind = System.Environment.SpecialFolder.ApplicationData
         result = System.Environment.GetFolderPath(kind)
