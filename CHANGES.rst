@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.8 (2025-03-30)
+------------------
+- Add New_Service().
+
 0.2.6 (2025-03-25)
 ------------------
 - Add LocalApplicationDataPath property.

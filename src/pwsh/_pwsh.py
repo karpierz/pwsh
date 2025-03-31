@@ -437,6 +437,7 @@ class PowerShell(ProxyBase):
     Start_Process = CmdLet("Start-Process")
     Stop_Process  = CmdLet("Stop-Process")
 
+    New_Service   = CmdLet("New-Service", flatten_result=True)
     Get_Service   = CmdLet("Get-Service")
     Start_Service = CmdLet("Start-Service", flatten_result=True)
     Stop_Service  = CmdLet("Stop-Service")
