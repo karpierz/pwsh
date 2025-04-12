@@ -18,11 +18,12 @@ import contextlib
 
 class Path(pathlib.Path):
 
-    def __new__(cls, *args, **kwargs):
-        cls._flavour = (pathlib.WindowsPath
-                        if os.name == "nt" else
-                        pathlib.PosixPath)._flavour
-        return super().__new__(cls, *args, **kwargs)
+    if sys.version_info[:2] < (3, 13):
+        def __new__(cls, *args, **kwargs):
+            cls._flavour = (pathlib.WindowsPath
+                            if os.name == "nt" else
+                            pathlib.PosixPath)._flavour
+            return super().__new__(cls, *args, **kwargs)
 
     if sys.version_info[:2] < (3, 8):
         def rename(self, target):

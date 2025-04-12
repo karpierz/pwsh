@@ -7,7 +7,7 @@ requires = ['setuptools>=78.1.0', 'packaging>=24.2.0', 'tox>=4.25.0']
 
 [project]
 name        = 'pwsh'
-version     = '0.2.8'
+version     = '0.2.9'
 description = 'Provides API for PowerShell.'
 urls.Homepage      = 'https://pypi.org/project/pwsh/'
 urls.Documentation = 'https://pw-sh.readthedocs.io/'
@@ -67,7 +67,7 @@ optional-dependencies.'doc' = [
 ]
 optional-dependencies.'test' = [
     'deepdiff>=8.4.2',
-    'rich>=13.9.4',
+    'rich>=14.0.0',
 ]
 
 [project.scripts]
@@ -164,7 +164,7 @@ min_version = '4.25.0'
 skip_missing_interpreters = true
 requires = [
     {replace='ref',of=['tool','tox','_','base','deps'],extend=true},
-    'virtualenv>=20.29.3',
+    'virtualenv>=20.30.0',
     'tox-backtick>=0.5.10',
 ]
 [tool.tox.labels]
@@ -222,7 +222,7 @@ commands = [
 ]
 deps = [
     {replace='ref',of=['tool','tox','env_run_base','deps'],extend=true},
-    'coverage>=7.7.1',
+    'coverage>=7.8.0',
     'covdefaults>=2.3.0',
     'diff-cover>=9.2.0',
 ]
@@ -276,7 +276,7 @@ commands = [
 extras = []
 deps = [
     {replace='ref',of=['tool','tox','env_run_base','deps'],extend=true},
-    'flake8>=7.1.2',
+    'flake8>=7.2.0',
     'flake8-pyproject>=1.2.3',
     'flake8-docstrings>=1.7.0',
     'pep8-naming>=0.14.1',
