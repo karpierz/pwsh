@@ -3,11 +3,11 @@
 
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools>=78.1.0', 'packaging>=24.2.0', 'tox>=4.25.0']
+requires = ['setuptools>=79.0.1', 'packaging>=25.0.0', 'tox>=4.25.0']
 
 [project]
 name        = 'pwsh'
-version     = '0.2.9'
+version     = '0.2.10'
 description = 'Provides API for PowerShell.'
 urls.Homepage      = 'https://pypi.org/project/pwsh/'
 urls.Documentation = 'https://pw-sh.readthedocs.io/'
@@ -45,7 +45,7 @@ classifiers = [
 requires-python = '>=3.9.0,<4.0.0'
 dependencies = [
     # mandatory
-    'setuptools>=78.1.0',
+    'setuptools>=79.0.1',
     'pkg-about>=1.2.11',
     # others
     'nocasedict>=2.0.4',
@@ -180,7 +180,7 @@ deploy = [{replace='ref',of=['tool','tox','labels','build'],extend=true}, 'publi
 base_python = ['python3.12']
 deps = [
     'pip>=25.0.1',
-    'setuptools>=78.1.0',
+    'setuptools>=79.0.1',
 ]
 package_subdir = 'pwsh'
 

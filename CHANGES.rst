@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.2.10 (2025-04-24)
+-------------------
+- Fix for Stop_Process. -Force is now the default.
+
 0.2.9 (2025-04-10)
 ------------------
 - Fix compability for Python >= 13.
