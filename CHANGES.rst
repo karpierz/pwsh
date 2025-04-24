@@ -4,10 +4,11 @@ Changelog
 0.2.10 (2025-04-24)
 -------------------
 - Fix for Stop_Process. -Force is now the default.
+- Change base_python to Python 3.13
 
 0.2.9 (2025-04-10)
 ------------------
-- Fix compability for Python >= 13.
+- Fix compability for Python >= 3.13
 
 0.2.8 (2025-03-30)
 ------------------
