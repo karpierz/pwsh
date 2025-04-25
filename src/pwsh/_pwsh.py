@@ -438,7 +438,7 @@ class PowerShell(ProxyBase):
     _Stop_Process = CmdLet("Stop-Process")
     def Stop_Process(self, **kwargs):
         Force = kwargs.pop("Force", True)
-        return self._Stop_Process(**kwargs)
+        return self._Stop_Process(Force=Force, **kwargs)
 
     New_Service   = CmdLet("New-Service", flatten_result=True)
     Get_Service   = CmdLet("Get-Service")

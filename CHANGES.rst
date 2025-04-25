@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.2.10 (2025-04-24)
+0.2.11 (2025-04-24)
 -------------------
 - Fix for Stop_Process. -Force is now the default.
 - Change base_python to Python 3.13
