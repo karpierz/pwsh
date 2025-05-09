@@ -14,8 +14,11 @@ from System.Collections.Generic import Dictionary
 from System.Collections import Hashtable
 
 from public import public
+from nocasedict import NocaseDict
 from zope.proxy import ProxyBase, non_overridable          # noqa: F401
 from zope.proxy import getProxiedObject, setProxiedObject  # noqa: F401
+from tqdm import tqdm  # noqa: F401
+from colored import cprint
 
 from ._adict   import adict, defaultadict
 from ._epath   import Path
@@ -25,6 +28,7 @@ clr.AddReference("System.ServiceProcess")
 sys.path.append(str(pathlib.Path(__file__).resolve().parent/"lib"))
 clr.AddReference("System.Management.Automation")
 clr.AddReference("Microsoft.Management.Infrastructure")
+from System.Management import Automation                           # noqa: E402
 from System.Management.Automation import PSObject, PSCustomObject  # noqa: E402
 # from System.Management.Automation.Language import Parser         # noqa: E402
 # from Microsoft.Management.Infrastructure import *                # noqa: E402
@@ -80,7 +84,7 @@ class CmdLet:
     def __init__(self, name: str, *,
                  flatten_result: bool = False,
                  customize_result = lambda self, result: result):
-        """???"""
+        """Initialize"""
         self.name  = name
         self._inst = None
         self._flat = flatten_result
@@ -92,7 +96,7 @@ class CmdLet:
         return self
 
     def __call__(self, **kwargs):
-        """???"""
+        """Call"""
         result = self._inst.cmd(self.name, **kwargs)
         if self._flat: result = self._inst.flatten_result(result)
         return self._cust(self._inst, result)
@@ -104,16 +108,116 @@ class PowerShell(ProxyBase):
 
     def __new__(cls, obj=None):
         self = super().__new__(cls,
-                               System.Management.Automation.PowerShell.Create()
+                               Automation.PowerShell.Create()
                                if obj is None else obj)
         if obj is None:
             self.ErrorActionPreference = "Stop"
+
+            # https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/
+            #         about/about_redirection?view=powershell-5.1
+            # https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/
+            #         about/about_output_streams?view=powershell-5.1
+
+            # Stream         Stream #  Write Cmdlet
+            # -------------------------------------
+            # output stream  1         Write-Output
+            # Error          2         Write-Error
+            # Warning        3         Write-Warning
+            # Verbose        4         Write-Verbose
+            # Debug          5         Write-Debug
+            # Information    6         Write-Information, Write-Host
+            # Progress       n/a       Write-Progress
+
+            # preinit of variables for event handler for the event on each relevant stream
+            self.ErrorActionPreference
+            self.WarningPreference
+            self.VerbosePreference
+            self.DebugPreference
+            self.InformationPreference
+            self.ProgressPreference
+            # register event handler for the DataAdded event on each relevant stream collection
+            streams = self.Streams
+            # streams.Error.DataAdded     += self._stream_output_event
+            streams.Warning.DataAdded     += self._stream_output_event
+            streams.Verbose.DataAdded     += self._stream_output_event
+            streams.Debug.DataAdded       += self._stream_output_event
+            streams.Information.DataAdded += self._stream_output_event
+            streams.Progress.DataAdded    += self._stream_output_event
+            # create a data collection for standard output and register the event handler on that
+            output_collection = Automation.PSDataCollection[PSObject]()  # .__overloads__
+            output_collection.DataAdded   += self._stream_output_event
+            cprint("", end="")
+
         self.env = Env()
         self.env.update(_inst=self)
+
         return self
 
+    def _stream_output_event(self, sender: System.Object,
+                             event_args: Automation.DataAddedEventArgs):
+        for item in sender.ReadAll():
+            if isinstance(item, Automation.ErrorRecord):  # NOK !!!
+                print(f"ErrorRecord: {item}", end=" ", flush=True)
+                if False:
+                    message = item.ErrorDetails.Message or item.Exception.Message
+                    cprint(message, flush=True, fore_256="red")
+            elif isinstance(item, Automation.WarningRecord):
+                if self._WarningPreference != Automation.ActionPreference.SilentlyContinue:
+                    cprint(f"WARNING: {item.Message}", flush=True, fore_256="light_yellow")
+            elif isinstance(item, Automation.VerboseRecord):
+                if self._VerbosePreference != Automation.ActionPreference.SilentlyContinue:
+                    cprint(f"VERBOSE: {item.Message}", flush=True, fore_256="light_yellow")
+            elif isinstance(item, Automation.DebugRecord):
+                if self._DebugPreference != Automation.ActionPreference.SilentlyContinue:
+                    cprint(f"DEBUG: {item.Message}", flush=True, fore_256="light_yellow")
+            elif isinstance(item, Automation.InformationRecord):
+                if self._InformationPreference != Automation.ActionPreference.SilentlyContinue:
+                    if isinstance(item.MessageData, Automation.HostInformationMessage):
+                        cprint(f"{item.MessageData.Message}", flush=True,
+                            fore_256=self._console_color2color[item.MessageData.ForegroundColor],
+                            back_256=self._console_color2color[item.MessageData.BackgroundColor],
+                            end="" if item.MessageData.NoNewLine else None)
+                    else:
+                        cprint(f"{item.MessageData}", flush=True)
+            elif isinstance(item, Automation.ProgressRecord):  # NOK !!!
+                if self._ProgressPreference != Automation.ActionPreference.SilentlyContinue:
+                    cprint("\b" * 1000 + f"{item.Activity}, {item.StatusDescription}", end="",
+                           flush=True, fore_256="light_yellow", back_256="dark_cyan")
+                    # 'Activity', 'CurrentOperation', 'ParentActivityId', 'PercentComplete',
+                    # 'RecordType', 'SecondsRemaining', 'StatusDescription',
+                    # 'ActivityId' (only for reading), 'ToString()'
+                    # print("CurrentOperation:",  item.CurrentOperation,  " ;",
+                    #       "PercentComplete:",   item.PercentComplete,   " ;",
+                    #       "RecordType:",        item.RecordType,        " ;",
+                    #       "StatusDescription:", item.StatusDescription)
+                    # print("ToString():",        item.ToString())
+                    # ps.Write_Progress("Write_Progress !!!",
+                    #                   Status=f"{i}% Complete:", PercentComplete=i)
+            else:  # NOK !!!
+                print(f"UnknownRecord[{type(item)}]: {item}", dir(item), flush=True)
+
+    _console_color2color = {
+        None: None,
+        System.ConsoleColor.Black: "black",
+        System.ConsoleColor.DarkBlue: "dark_blue",
+        System.ConsoleColor.DarkGreen: "dark_green",
+        System.ConsoleColor.DarkCyan: "dark_cyan",
+        System.ConsoleColor.DarkRed: "dark_red_1",
+        System.ConsoleColor.DarkMagenta: "dark_magenta_1",
+        System.ConsoleColor.DarkYellow: "yellow_4a",
+        System.ConsoleColor.Gray: "light_gray",
+        System.ConsoleColor.DarkGray: "dark_gray",
+        System.ConsoleColor.Blue: "blue",
+        System.ConsoleColor.Green: "green",
+        System.ConsoleColor.Cyan: "cyan",
+        System.ConsoleColor.Red: "red",
+        System.ConsoleColor.Magenta: "magenta",
+        System.ConsoleColor.Yellow: "yellow",
+        System.ConsoleColor.White: "white",
+    }
+
     def __init__(self, obj=None):
-        """???"""
+        """Initialize"""
         super().__init__(getProxiedObject(self) if obj is None else obj)
 
     class Exception(Exception):  # noqa: A001,N818
@@ -128,25 +232,12 @@ class PowerShell(ProxyBase):
             raise self.Exception("ScriptHalted")
 
     @property
-    def Error(self):
-        return self.Runspace.SessionStateProxy.GetVariable("Error")
+    def Host(self):
+        return self.Runspace.SessionStateProxy.GetVariable("Host")
 
     @property
-    def ErrorActionPreference(self):
-        return self.Runspace.SessionStateProxy.GetVariable("ErrorActionPreference")
-
-    @ErrorActionPreference.setter
-    def ErrorActionPreference(self, value):
-        self.Runspace.SessionStateProxy.SetVariable("ErrorActionPreference", value)
-
-    @contextlib.contextmanager
-    def ErrorAction(self, preference):
-        eap = ps.ErrorActionPreference
-        ps.ErrorActionPreference = preference
-        try:
-            yield
-        finally:
-            ps.ErrorActionPreference = eap
+    def Error(self):
+        return self.Runspace.SessionStateProxy.GetVariable("Error")
 
     @property
     def ErrorView(self):
@@ -157,45 +248,124 @@ class PowerShell(ProxyBase):
         self.Runspace.SessionStateProxy.SetVariable("ErrorView", value)
 
     @property
-    def ProgressPreference(self):
-        return self.Runspace.SessionStateProxy.GetVariable("ProgressPreference")
+    def ErrorActionPreference(self):
+        result = self.Runspace.SessionStateProxy.GetVariable("ErrorActionPreference")
+        self._ErrorActionPreference = result
+        return result
 
-    @ProgressPreference.setter
-    def ProgressPreference(self, value):
-        self.Runspace.SessionStateProxy.SetVariable("ProgressPreference", value)
+    @ErrorActionPreference.setter
+    def ErrorActionPreference(self, value):
+        self.Runspace.SessionStateProxy.SetVariable("ErrorActionPreference", value)
+        self.ErrorActionPreference
 
     @contextlib.contextmanager
-    def Progress(self, preference):
-        pap = ps.ProgressPreference
-        ps.ProgressPreference = preference
+    def ErrorAction(self, preference):
+        eap = self.ErrorActionPreference
+        self.ErrorActionPreference = preference
         try:
             yield
         finally:
-            ps.ProgressPreference = pap
-
-    @property
-    def InformationPreference(self):
-        return self.Runspace.SessionStateProxy.GetVariable("InformationPreference")
-
-    @InformationPreference.setter
-    def InformationPreference(self, value):
-        self.Runspace.SessionStateProxy.SetVariable("InformationPreference", value)
-
-    @property
-    def VerbosePreference(self):
-        return self.Runspace.SessionStateProxy.GetVariable("VerbosePreference")
-
-    @VerbosePreference.setter
-    def VerbosePreference(self, value):
-        self.Runspace.SessionStateProxy.SetVariable("VerbosePreference", value)
+            self.ErrorActionPreference = eap
 
     @property
     def WarningPreference(self):
-        return self.Runspace.SessionStateProxy.GetVariable("WarningPreference")
+        result = self.Runspace.SessionStateProxy.GetVariable("WarningPreference")
+        self._WarningPreference = result
+        return result
 
     @WarningPreference.setter
     def WarningPreference(self, value):
         self.Runspace.SessionStateProxy.SetVariable("WarningPreference", value)
+        self.WarningPreference
+
+    @contextlib.contextmanager
+    def Warning(self, preference):  # noqa: A003
+        pap = self.WarningPreference
+        self.WarningPreference = preference
+        try:
+            yield
+        finally:
+            self.WarningPreference = pap
+
+    @property
+    def VerbosePreference(self):
+        result = self.Runspace.SessionStateProxy.GetVariable("VerbosePreference")
+        self._VerbosePreference = result
+        return result
+
+    @VerbosePreference.setter
+    def VerbosePreference(self, value):
+        self.Runspace.SessionStateProxy.SetVariable("VerbosePreference", value)
+        self.VerbosePreference
+
+    @contextlib.contextmanager
+    def Verbose(self, preference):
+        pap = self.VerbosePreference
+        self.VerbosePreference = preference
+        try:
+            yield
+        finally:
+            self.VerbosePreference = pap
+
+    @property
+    def DebugPreference(self):
+        result = self.Runspace.SessionStateProxy.GetVariable("DebugPreference")
+        self._DebugPreference = result
+        return result
+
+    @DebugPreference.setter
+    def DebugPreference(self, value):
+        self.Runspace.SessionStateProxy.SetVariable("DebugPreference", value)
+        self.DebugPreference
+
+    @contextlib.contextmanager
+    def Debug(self, preference):
+        pap = self.DebugPreference
+        self.DebugPreference = preference
+        try:
+            yield
+        finally:
+            self.DebugPreference = pap
+
+    @property
+    def InformationPreference(self):
+        result = self.Runspace.SessionStateProxy.GetVariable("InformationPreference")
+        self._InformationPreference = result
+        return result
+
+    @InformationPreference.setter
+    def InformationPreference(self, value):
+        self.Runspace.SessionStateProxy.SetVariable("InformationPreference", value)
+        self.InformationPreference
+
+    @contextlib.contextmanager
+    def Information(self, preference):
+        pap = self.InformationPreference
+        self.InformationPreference = preference
+        try:
+            yield
+        finally:
+            self.InformationPreference = pap
+
+    @property
+    def ProgressPreference(self):
+        result = self.Runspace.SessionStateProxy.GetVariable("ProgressPreference")
+        self._ProgressPreference = result
+        return result
+
+    @ProgressPreference.setter
+    def ProgressPreference(self, value):
+        self.Runspace.SessionStateProxy.SetVariable("ProgressPreference", value)
+        self.ProgressPreference
+
+    @contextlib.contextmanager
+    def Progress(self, preference):
+        pap = self.ProgressPreference
+        self.ProgressPreference = preference
+        try:
+            yield
+        finally:
+            self.ProgressPreference = pap
 
     def cmd(self, cmd, **kwargs):
         cmd = self.AddCommand(cmd)
@@ -436,6 +606,7 @@ class PowerShell(ProxyBase):
     Get_Process   = CmdLet("Get-Process")
     Start_Process = CmdLet("Start-Process")
     _Stop_Process = CmdLet("Stop-Process")
+
     def Stop_Process(self, **kwargs):
         Force = kwargs.pop("Force", True)
         return self._Stop_Process(Force=Force, **kwargs)
@@ -519,17 +690,30 @@ class PowerShell(ProxyBase):
     _Write_Host = CmdLet("Write-Host", flatten_result=True)
 
     def Write_Host(self, Object, **kwargs):
-        return self._Write_Host(Object=Object, **kwargs)
+        preference = self._customize_ActionPreference(kwargs.get("InformationAction",
+                                                      Automation.ActionPreference.Continue))
+        if preference == Automation.ActionPreference.Ignore:
+            preference = Automation.ActionPreference.SilentlyContinue
+        elif preference == Automation.ActionPreference.SilentlyContinue:
+            preference = Automation.ActionPreference.Continue
+        with self.Information(preference):
+            return self._Write_Host(Object=Object, **kwargs)
 
     _Write_Information = CmdLet("Write-Information", flatten_result=True)
 
     def Write_Information(self, Msg, **kwargs):
-        return self._Write_Information(Msg=Msg, **kwargs)
+        preference = self._customize_ActionPreference(kwargs.get("InformationAction",
+                                                                 self.InformationPreference))
+        with self.Information(preference):
+            return self._Write_Information(Msg=Msg, **kwargs)
 
     _Write_Warning = CmdLet("Write-Warning", flatten_result=True)
 
     def Write_Warning(self, Msg, **kwargs):
-        return self._Write_Warning(Msg=Msg, **kwargs)
+        preference = self._customize_ActionPreference(kwargs.get("WarningAction",
+                                                                 self.WarningPreference))
+        with self.Warning(preference):
+            return self._Write_Warning(Msg=Msg, **kwargs)
 
     _Write_Error = CmdLet("Write-Error", flatten_result=True)
 
@@ -539,17 +723,27 @@ class PowerShell(ProxyBase):
     _Write_Verbose = CmdLet("Write-Verbose", flatten_result=True)
 
     def Write_Verbose(self, Msg, **kwargs):
-        return self._Write_Verbose(Msg=Msg, **kwargs)
+        preference = (self.VerbosePreference if "Verbose" not in kwargs else
+                      Automation.ActionPreference.Continue if kwargs["Verbose"] else
+                      Automation.ActionPreference.SilentlyContinue)
+        with self.Verbose(preference):
+            return self._Write_Verbose(Msg=Msg, **kwargs)
 
     _Write_Debug = CmdLet("Write-Debug", flatten_result=True)
 
     def Write_Debug(self, Msg, **kwargs):
-        return self._Write_Debug(Msg=Msg, **kwargs)
+        preference = (self.DebugPreference if "Debug" not in kwargs else
+                      Automation.ActionPreference.Inquire if kwargs["Debug"] else
+                      Automation.ActionPreference.SilentlyContinue)
+        with self.Debug(preference):
+            return self._Write_Debug(Msg=Msg, **kwargs)
 
     _Write_Progress = CmdLet("Write-Progress", flatten_result=True)
 
     def Write_Progress(self, Activity, **kwargs):
-        return self._Write_Progress(Activity=Activity, **kwargs)
+        preference = self.ProgressPreference
+        with self.Progress(preference):
+            return self._Write_Progress(Activity=Activity, **kwargs)
 
     _Write_Output = CmdLet("Write-Output", flatten_result=True)
 
@@ -563,6 +757,34 @@ class PowerShell(ProxyBase):
             return self._Read_Host(**kwargs)
         else:
             return self._Read_Host(Prompt=Prompt, **kwargs)
+
+    @classmethod
+    def _customize_ActionPreference(cls, preference):
+        if isinstance(preference, Automation.ActionPreference):
+            return preference
+        elif (isinstance(preference, int)
+              or (isinstance(preference, str) and preference.isdigit())):
+            return Automation.ActionPreference(int(preference))
+        elif isinstance(preference, str) and not preference.isdigit():
+            return cls._map_action_preference[preference]
+        return preference
+
+    _map_action_preference = NocaseDict({
+        # Ignore this event and continue
+        "SilentlyContinue": Automation.ActionPreference.SilentlyContinue,
+        # Stop the command
+        "Stop":             Automation.ActionPreference.Stop,
+        # Handle this event as normal and continue
+        "Continue":         Automation.ActionPreference.Continue,
+        # Ask whether to stop or continue
+        "Inquire":          Automation.ActionPreference.Inquire,
+        # Ignore the event completely (not even logging it to the target stream)
+        "Ignore":           Automation.ActionPreference.Ignore,
+        # Reserved for future use.
+        "Suspend":          Automation.ActionPreference.Suspend,
+        # Enter the debugger. (only for Powershell 7
+        # "Break":          Automation.ActionPreference.Break,
+    })
 
     # Microsoft.PowerShell.Security
 

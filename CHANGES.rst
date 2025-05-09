@@ -1,6 +1,18 @@
 Changelog
 =========
 
+0.3.2 (2025-05-08)
+------------------
+- Support for PyPy has been removed (due to problems with pythonnet).
+- Drop support for Python 3.9 (due to compatibility issues).
+- Add 'Host' property.
+- Add 'DebugPreference' property.
+- | Bugfix: Most outputs of the Write_*() cmdlet's are now visible in the
+  | Python console (outputs of the Write_Output() are still not visible).
+- Update readthedocs's python to version 3.13
+- Update tox's base_python to version 3.13
+- Setup (dependencies) update.
+
 0.2.11 (2025-04-24)
 -------------------
 - Fix for Stop_Process. -Force is now the default.
