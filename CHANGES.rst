@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.3.3 (2025-05-15)
+------------------
+- The distribution is now created using 'build' instead of 'setuptools'.
+- Setup (dependencies) update (due to regressions in tox and setuptools).
+
 0.3.2 (2025-05-08)
 ------------------
 - Support for PyPy has been removed (due to problems with pythonnet).
