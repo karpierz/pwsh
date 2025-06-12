@@ -10,5 +10,5 @@ from ._util   import issequence   # noqa: F401
 from ._util   import isiterable   # noqa: F401
 from ._unique import unique       # noqa: F401
 from ._unique import iter_unique  # noqa: F401
-del _pwsh, _adict, _epath, _modpath, _run, _util  # noqa
+del _pwsh, _adict, _epath, _modpath, _run, _util, _unique  # noqa
 out_null = dict(stdout=run.DEVNULL, stderr=run.DEVNULL)
