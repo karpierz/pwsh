@@ -4,11 +4,13 @@
 __all__ = ('module_path',)
 
 import sys
+import types
 import inspect
-import pathlib
+from pathlib import Path
 
 
-def module_path(module=None, *, level=1):
+def module_path(module: types.ModuleType | None = None,
+                *, level: int = 1) -> Path:
     if module is not None:
         mfile = inspect.getfile(module)
     else:
@@ -18,4 +20,4 @@ def module_path(module=None, *, level=1):
             mfile = inspect.getfile(module)
         else:
             mfile = frame.f_globals["__file__"]
-    return pathlib.Path(mfile).resolve().parent
+    return Path(mfile).resolve().parent

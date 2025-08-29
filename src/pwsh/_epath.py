@@ -1,3 +1,5 @@
+# type: ignore
+
 # Copyright (c) 2016 Adam Karpierz
 # SPDX-License-Identifier: Zlib
 
@@ -174,8 +176,8 @@ class Path(pathlib.Path):
         "blake2s": hashlib.blake2s,
     }
 
-    def unpack_archive(self, extract_dir: pathlib.Path = None, *,
-                       format: str = None):  # noqa: A002
+    def unpack_archive(self, extract_dir: pathlib.Path | None = None, *,
+                       format: str | None = None):  # noqa: A002
         """Unpack an archive."""
         return shutil.unpack_archive(self, extract_dir, format)
 

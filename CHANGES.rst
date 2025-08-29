@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.3.6 (2025-08-28)
+------------------
+- | Import of internal PowerShell assemblies has been improved and is
+  | now more portable between different versions of PowerShell.
+  | From now on, assemblies are first imported from own PowerShell set.
+- Making the package typed (but should be enhanced and more restricted).
+- General improvements and cleanup.
+- Setup (dependencies) update.
+
 0.3.4 (2025-06-11)
 ------------------
 - Little cleanup.

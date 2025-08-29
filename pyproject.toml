@@ -3,11 +3,11 @@
 
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools>=80.9.0', 'packaging>=25.0.0', 'tox>=4.26.0']
+requires = ['setuptools>=80.9.0', 'packaging>=25.0.0', 'tox>=4.28.4']
 
 [project]
 name        = 'pwsh'
-version     = '0.3.4'
+version     = '0.3.6'
 description = 'Provides API for PowerShell.'
 authors = [
     { name  = 'Adam Karpierz' },
@@ -44,13 +44,13 @@ requires-python = '>=3.10.0,<4.0.0'
 dependencies = [
     # mandatory
     'setuptools>=80.9.0',
-    'pkg-about>=1.3.6',
+    'pkg-about>=1.4.0',
     # others
     'nocasedict>=2.1.0',
     'atpublic>=6.0.1',
     'zope.proxy>=6.1.0',
     'pythonnet>=3.0.5',
-    'colored>=2.3.0',
+    'colored>=2.3.1',
     'tqdm>=4.67.1',
 ]
 dynamic = ['readme']
@@ -66,8 +66,8 @@ optional-dependencies.'doc' = [
     'nbsphinx>=0.9.7',
 ]
 optional-dependencies.'test' = [
-    'deepdiff>=8.5.0',
-    'rich>=14.0.0',
+    'deepdiff>=8.6.0',
+    'rich>=14.1.0',
 ]
 
 [project.scripts]
@@ -111,12 +111,19 @@ run.source = [
     'tests',
 ]
 run.omit = [
+    '_adict.py',
+    '_epath.py',
+    '_modpath.py',
+    '_run.py',
+    '_unique.py',
+    '_util.py',
+    '**/tests/tman_*.py',
 ]
 run.branch = true
 run.data_file = '.tox/coverage/.coverage'
 run.plugins = ['covdefaults']
 # report
-report.exclude_lines = [
+report.exclude_also = [
     # Regexes
     # Have to re-enable the standard pragma
     '^\s*if\s+self\.debug\s*:',
@@ -125,6 +132,7 @@ report.exclude_lines = [
     '''if\s+__name__.*\s*==\s*['"]__main__['"]\s*:''',
     '^\s*@unittest\.skip\(',
     '^\s*@unittest\.skipIf\(sys\.platform\.startswith\("win"\)',
+    'if typing.TYPE_CHECKING:',
 ]
 report.omit = [
     'tests/run.py',
@@ -139,7 +147,7 @@ filename = ['*.py','*.pyx']
 #exclude = ['.tox','*.egg','.git','__pycache__','build','_build','docs/_build','dist']
 max-line-length = 99
 ignore = ['E126','E203','E221','E251','E302','E701','E702','E731',
-          'E122','E127','E128','E222','E272','E241','E266','E226','E704',
+          'E122','E127','E128','E222','E272','E241','E266','E226',
           'D100','D101','D102','D103','D104','D400','D401','D202',
           'N806','N802','N803','N801',
           'I100','W503']
@@ -153,23 +161,39 @@ count = true
 #verbose
 #quiet
 
+[tool.mypy]
+python_version = '3.10'
+strict = true
+sqlite_cache = true
+warn_unused_configs = true
+exclude_gitignore = true
+install_types = true
+non_interactive = true
+pretty = true
+check_untyped_defs = true
+#ignore_missing_imports = true
+files = ['src']
+#exclude = ["docs/", "tests/"]
+
 #
 # Configuration(s) for tox
 #
 
 [tool.tox]
-env_list = [{replace='ref',of=['tool','tox','labels','py'],extend=true}, 'lint', 'docs']
-min_version = '4.26.0'
+env_list = [{replace='ref',of=['tool','tox','labels','py'],extend=true},
+            'typing', 'lint', 'docs']
+min_version = '4.28.4'
 skip_missing_interpreters = true
 requires = [
     {replace='ref',of=['tool','tox','_','base','deps'],extend=true},
-    'virtualenv>=20.31.2',
-    'tox-backtick>=0.6.4',
+    'virtualenv>=20.34.0',
+    'tox-backtick>=0.7.0',
 ]
 [tool.tox.labels]
 py = ['py310','py311','py312','py313']
-prepare  = ['prepare']
+prepare = ['prepare']
 coverage = ['coverage']
+typing = ['typing']
 lint = ['lint']
 docs = ['docs']
 build  = [{replace='ref',of=['tool','tox','labels','py'],extend=true}, 'docs', 'build']
@@ -178,14 +202,15 @@ deploy = [{replace='ref',of=['tool','tox','labels','build'],extend=true}, 'publi
 [tool.tox._.base]
 base_python = ['python3.13']
 deps = [
-    'pip>=25.1.1',
+    'pip>=25.2',
     'setuptools>=80.9.0',
 ]
 package_subdir = 'pwsh'
 
 [tool.tox.env_run_base]
-description = "Run tests under {base_python}"
+description = 'Run tests under {base_python}'
 set_env.PYTHONDONTWRITEBYTECODE = '1'
+set_env.PKG_IMPL = "`python -W ignore -c \"import platform ; pimpl = platform.python_implementation() ; print('cp' if pimpl == 'CPython' else 'pp' if pimpl == 'PyPy' else '', end='')\" 2> nul`"
 set_env.PKG_PVER = "`python -W ignore -c \"import platform ; print(''.join(platform.python_version_tuple()[:2]), end='')\" 2> nul`"
 set_env.PKG_NAME = "`python -W ignore -c \"import setuptools ; setuptools._distutils.core._setup_stop_after='config' ; print(setuptools.setup().metadata.get_name(),     end='')\" 2> nul`"
 set_env.PKG_DIST = "`python -W ignore -c \"import setuptools ; setuptools._distutils.core._setup_stop_after='config' ; print(setuptools.setup().metadata.get_fullname(), end='')\" 2> nul`"
@@ -215,22 +240,22 @@ deps = []
 base_python = {replace='ref',of=['tool','tox','_','base','base_python']}
 commands = [
     ['{env_python}','-m','coverage','erase'],
-    ['-','{env_python}','-m','coverage','run','-m','tests',{replace="posargs",extend=true}],
+    ['-','{env_python}','-m','coverage','run','-m','tests',{replace='posargs',extend=true}],
     ['-','{env_python}','-m','coverage','html'],
     ['{env_python}','-m','coverage','report'],
 ]
 deps = [
     {replace='ref',of=['tool','tox','env_run_base','deps'],extend=true},
-    'coverage>=7.8.2',
+    'coverage>=7.10.5',
     'covdefaults>=2.3.0',
-    'diff-cover>=9.3.2',
+    'diff-cover>=9.6.0',
 ]
 
 [tool.tox.env.'docs']
 base_python = {replace='ref',of=['tool','tox','_','base','base_python']}
 commands = [
     ['{env_python}','-m','sphinxlint','--ignore','.tox','--ignore','build','--ignore','dist'],
-   #['{env_python}','-m','sphinx.apidoc','-f','{envsitepackagesdir}/{[tool.tox._.base]package_subdir}'],
+   #['{env_python}','-m','sphinx.apidoc','-f','{env_site_packages_dir}/{[tool.tox._.base]package_subdir}'],
     ['{env_python}','-m','sphinx.cmd.build','-W','-a','-b','html','-E','./docs','./build/docs/html'],
     ['{env_python}','-m','sphinx.cmd.build','-W','-a','-b','linkcheck','./docs','./build/docs/html'],
     ['{env_python}','-m','sphinx.cmd.build','-W','-a','-b','doctest',  './docs','./build/docs/html'],
@@ -250,7 +275,7 @@ commands = [
 ]
 deps = [
     {replace='ref',of=['tool','tox','env_run_base','deps'],extend=true},
-    'build>=1.2.2.post1',
+    'build>=1.3.0',
     'twine>=6.1.0',
 ]
 
@@ -267,18 +292,33 @@ deps = [
     'twine>=6.1.0',
 ]
 
+[tool.tox.env.'typing']
+description = 'Static type checking'
+base_python = {replace='ref',of=['tool','tox','_','base','base_python']}
+commands = [
+    ['{env_python}','-m','mypy'],
+]
+extras = []
+deps = [
+    'mypy>=1.17.1',
+    'mypy_extensions>=1.1.0',
+    'types-setuptools>=80.9.0.20250822',
+    'types-tqdm>=4.67.0.20250809',
+]
+
 [tool.tox.env.'lint']
 base_python = {replace='ref',of=['tool','tox','_','base','base_python']}
 commands = [
-    ['{env_python}','-m','flake8','{envsitepackagesdir}/{[tool.tox._.base]package_subdir}/'],
+    ['{env_python}','-m','flake8','{env_site_packages_dir}/{[tool.tox._.base]package_subdir}/'],
 ]
 extras = []
 deps = [
     {replace='ref',of=['tool','tox','env_run_base','deps'],extend=true},
-    'flake8>=7.2.0',
+    'flake8>=7.3.0',
+    'flake8-in-file-ignores>=0.3.0',
     'flake8-pyproject>=1.2.3',
     'flake8-docstrings>=1.7.0',
     'pep8-naming>=0.15.1',
-    'flake8-builtins>=2.5.0',
+    'flake8-builtins>=3.0.0',
     'flake8-deprecated>=2.2.1',
 ]

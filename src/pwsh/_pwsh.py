@@ -1,37 +1,51 @@
+# flake8-in-file-ignores: noqa: E402
+
 # Copyright (c) 2012 Adam Karpierz
 # SPDX-License-Identifier: Zlib
 
-from typing import Dict
+from typing import TypeAlias, Any
+from collections.abc import Callable, Iterable, Sequence, Generator
+import builtins
 import sys
 import os
 import pathlib
+import shutil
 import contextlib
 from enum import IntEnum
 from collections import defaultdict
-import clr
-import System
-from System.Collections.Generic import Dictionary
-from System.Collections import Hashtable
+import clr     # type: ignore[import-untyped]
+import System  # type: ignore[import-not-found]
+from System import String
+from System.Collections.Generic import Dictionary  # type: ignore[import-not-found]
+from System.Collections import Hashtable           # type: ignore[import-not-found]
 
 from public import public
 from nocasedict import NocaseDict
-from zope.proxy import ProxyBase, non_overridable          # noqa: F401
-from zope.proxy import getProxiedObject, setProxiedObject  # noqa: F401
+from zope.proxy import (ProxyBase, non_overridable,  # type: ignore[import-untyped]  # noqa: F401
+                        getProxiedObject, setProxiedObject)
 from tqdm import tqdm  # noqa: F401
 from colored import cprint
 
 from ._adict   import adict, defaultadict
-from ._epath   import Path
+from ._epath   import Path  # type: ignore[attr-defined]  # !!! temporary !!!
 from ._modpath import module_path as _mpath
 
+AnyCallable: TypeAlias = Callable[..., Any]
+
+powershell_path = shutil.which("powershell.exe")
+if powershell_path is None:
+    raise AssertionError("powershell.exe was not found!")
+
 clr.AddReference("System.ServiceProcess")
+sys.path.append(str(pathlib.Path(powershell_path).parent))
 sys.path.append(str(pathlib.Path(__file__).resolve().parent/"lib"))
 clr.AddReference("System.Management.Automation")
 clr.AddReference("Microsoft.Management.Infrastructure")
-from System.Management import Automation                           # noqa: E402
-from System.Management.Automation import PSObject, PSCustomObject  # noqa: E402
-# from System.Management.Automation.Language import Parser         # noqa: E402
-# from Microsoft.Management.Infrastructure import *                # noqa: E402
+from System.Management import Automation           # type: ignore[import-not-found]
+from System.Management.Automation import PSObject  # type: ignore[import-not-found]
+from System.Management.Automation import PSCustomObject
+# from System.Management.Automation.Language import Parser
+# from Microsoft.Management.Infrastructure import *
 
 public(adict        = adict)
 public(defaultadict = defaultadict)
@@ -42,18 +56,18 @@ public(PSCustomObject = PSCustomObject)
 
 
 @public
-def module_path(*args, **kwargs):
+def module_path(*args: Any, **kwargs: Any) -> Path:
     return Path(_mpath(*args, level=kwargs.pop("level", 1) + 1, **kwargs))
 
 
-class PSCustomObjectProxy(ProxyBase):
+class PSCustomObjectProxy(ProxyBase):  # type: ignore[misc]
 
-    def __getattr__(self, name):
-        """???"""
+    def __getattr__(self, name: str) -> Any:
+        """Attribute access"""
         return self.Members[name].Value
 
-    def __getitem__(self, key):
-        """???"""
+    def __getitem__(self, key: Any) -> Any:
+        """Item access"""
         return self.Members[key].Value
 
 
@@ -64,18 +78,20 @@ class Env(adict):
                  "ProgramFiles", "ProgramFiles(x86)", "ProgramW6432",
                  "ProgramData", "APPDATA", "UserProfile", "HOME")}
 
-    def __getitem__(self, key):
-        """???"""
-        value = super().get("_inst").Get_Content(Path=rf"env:\{key}", EA="0")
+    def __getitem__(self, key: Any) -> Any:
+        """Item access"""
+        inst = super().__getitem__("_inst")
+        value = inst.Get_Content(Path=rf"env:\{key}", EA="0")
         if not value: return None
         return Path(value[0]) if key.lower() in Env.path_keys else value[0]
 
-    def __setitem__(self, key, value):
-        """???"""
+    def __setitem__(self, key: Any, value: Any) -> None:
+        """Item assignment"""
+        inst = super().__getitem__("_inst")
         if value is None:
-            super().get("_inst").Set_Content(Path=rf"env:\{key}", Value=value)
+            inst.Set_Content(Path=rf"env:\{key}", Value=value)
         else:
-            super().get("_inst").Set_Content(Path=rf"env:\{key}", Value=value)
+            inst.Set_Content(Path=rf"env:\{key}", Value=value)
 
 
 @public
@@ -83,19 +99,19 @@ class CmdLet:
 
     def __init__(self, name: str, *,
                  flatten_result: bool = False,
-                 customize_result = lambda self, result: result):
-        """Initialize"""
-        self.name  = name
-        self._inst = None
-        self._flat = flatten_result
-        self._cust = customize_result
+                 customize_result: AnyCallable = lambda self, result: result):
+        """Initializer"""
+        self.name:  str  = name
+        self._inst: Any  = None
+        self._flat: bool = flatten_result
+        self._cust: AnyCallable = customize_result
 
-    def __get__(self, instance, owner):
-        """???"""
+    def __get__(self, instance: Any, owner: Any = None) -> Any:
+        """Access handler"""
         self._inst = instance
         return self
 
-    def __call__(self, **kwargs):
+    def __call__(self, **kwargs: Any) -> Any:
         """Call"""
         result = self._inst.cmd(self.name, **kwargs)
         if self._flat: result = self._inst.flatten_result(result)
@@ -103,13 +119,14 @@ class CmdLet:
 
 
 @public
-class PowerShell(ProxyBase):
+class PowerShell(ProxyBase):  # type: ignore[misc]
     """Poweshell API"""
 
-    def __new__(cls, obj=None):
-        self = super().__new__(cls,
-                               Automation.PowerShell.Create()
-                               if obj is None else obj)
+    def __new__(cls, obj: Automation.PowerShell | None = None) -> 'PowerShell':
+        """Constructor"""
+        self: PowerShell = super().__new__(cls,
+                                           Automation.PowerShell.Create()
+                                           if obj is None else obj)
         if obj is None:
             self.ErrorActionPreference = "Stop"
 
@@ -147,6 +164,7 @@ class PowerShell(ProxyBase):
             output_collection = Automation.PSDataCollection[PSObject]()  # .__overloads__
             output_collection.DataAdded   += self._stream_output_event
             cprint("", end="")
+        else: pass  # pragma: no cover
 
         self.env = Env()
         self.env.update(_inst=self)
@@ -154,7 +172,7 @@ class PowerShell(ProxyBase):
         return self
 
     def _stream_output_event(self, sender: System.Object,
-                             event_args: Automation.DataAddedEventArgs):
+                             event_args: Automation.DataAddedEventArgs) -> None:
         for item in sender.ReadAll():
             if isinstance(item, Automation.ErrorRecord):  # NOK !!!
                 print(f"ErrorRecord: {item}", end=" ", flush=True)
@@ -216,14 +234,14 @@ class PowerShell(ProxyBase):
         System.ConsoleColor.White: "white",
     }
 
-    def __init__(self, obj=None):
-        """Initialize"""
+    def __init__(self, obj: Automation.PowerShell | None = None):
+        """Initializer"""
         super().__init__(getProxiedObject(self) if obj is None else obj)
 
-    class Exception(Exception):  # noqa: A001,N818
+    class Exception(builtins.Exception):  # noqa: A001,N818
         """PowerShell error."""
 
-    def Throw(self, expression=None):
+    def Throw(self, expression: Any | None = None) -> None:
         if expression is not None:
             self.cmd("Invoke-Expression", Command=f'throw "{expression}"')
             raise self.Exception(f"{expression}")
@@ -232,34 +250,34 @@ class PowerShell(ProxyBase):
             raise self.Exception("ScriptHalted")
 
     @property
-    def Host(self):
+    def Host(self) -> Any:
         return self.Runspace.SessionStateProxy.GetVariable("Host")
 
     @property
-    def Error(self):
+    def Error(self) -> Any:
         return self.Runspace.SessionStateProxy.GetVariable("Error")
 
     @property
-    def ErrorView(self):
+    def ErrorView(self) -> Any:
         return self.Runspace.SessionStateProxy.GetVariable("ErrorView")
 
     @ErrorView.setter
-    def ErrorView(self, value):
+    def ErrorView(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("ErrorView", value)
 
     @property
-    def ErrorActionPreference(self):
+    def ErrorActionPreference(self) -> Automation.ActionPreference:
         result = self.Runspace.SessionStateProxy.GetVariable("ErrorActionPreference")
         self._ErrorActionPreference = result
         return result
 
     @ErrorActionPreference.setter
-    def ErrorActionPreference(self, value):
+    def ErrorActionPreference(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("ErrorActionPreference", value)
         self.ErrorActionPreference
 
     @contextlib.contextmanager
-    def ErrorAction(self, preference):
+    def ErrorAction(self, preference: Any) -> Generator[None, None, None]:
         eap = self.ErrorActionPreference
         self.ErrorActionPreference = preference
         try:
@@ -268,18 +286,18 @@ class PowerShell(ProxyBase):
             self.ErrorActionPreference = eap
 
     @property
-    def WarningPreference(self):
+    def WarningPreference(self) -> Automation.ActionPreference:
         result = self.Runspace.SessionStateProxy.GetVariable("WarningPreference")
         self._WarningPreference = result
         return result
 
     @WarningPreference.setter
-    def WarningPreference(self, value):
+    def WarningPreference(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("WarningPreference", value)
         self.WarningPreference
 
     @contextlib.contextmanager
-    def Warning(self, preference):  # noqa: A003
+    def Warning(self, preference: Any) -> Generator[None, None, None]:  # noqa: A003
         pap = self.WarningPreference
         self.WarningPreference = preference
         try:
@@ -288,18 +306,18 @@ class PowerShell(ProxyBase):
             self.WarningPreference = pap
 
     @property
-    def VerbosePreference(self):
+    def VerbosePreference(self) -> Automation.ActionPreference:
         result = self.Runspace.SessionStateProxy.GetVariable("VerbosePreference")
         self._VerbosePreference = result
         return result
 
     @VerbosePreference.setter
-    def VerbosePreference(self, value):
+    def VerbosePreference(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("VerbosePreference", value)
         self.VerbosePreference
 
     @contextlib.contextmanager
-    def Verbose(self, preference):
+    def Verbose(self, preference: Any) -> Generator[None, None, None]:
         pap = self.VerbosePreference
         self.VerbosePreference = preference
         try:
@@ -308,18 +326,18 @@ class PowerShell(ProxyBase):
             self.VerbosePreference = pap
 
     @property
-    def DebugPreference(self):
+    def DebugPreference(self) -> Automation.ActionPreference:
         result = self.Runspace.SessionStateProxy.GetVariable("DebugPreference")
         self._DebugPreference = result
         return result
 
     @DebugPreference.setter
-    def DebugPreference(self, value):
+    def DebugPreference(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("DebugPreference", value)
         self.DebugPreference
 
     @contextlib.contextmanager
-    def Debug(self, preference):
+    def Debug(self, preference: Any) -> Generator[None, None, None]:
         pap = self.DebugPreference
         self.DebugPreference = preference
         try:
@@ -328,18 +346,18 @@ class PowerShell(ProxyBase):
             self.DebugPreference = pap
 
     @property
-    def InformationPreference(self):
+    def InformationPreference(self) -> Automation.ActionPreference:
         result = self.Runspace.SessionStateProxy.GetVariable("InformationPreference")
         self._InformationPreference = result
         return result
 
     @InformationPreference.setter
-    def InformationPreference(self, value):
+    def InformationPreference(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("InformationPreference", value)
         self.InformationPreference
 
     @contextlib.contextmanager
-    def Information(self, preference):
+    def Information(self, preference: Any) -> Generator[None, None, None]:
         pap = self.InformationPreference
         self.InformationPreference = preference
         try:
@@ -348,18 +366,18 @@ class PowerShell(ProxyBase):
             self.InformationPreference = pap
 
     @property
-    def ProgressPreference(self):
+    def ProgressPreference(self) -> Automation.ActionPreference:
         result = self.Runspace.SessionStateProxy.GetVariable("ProgressPreference")
         self._ProgressPreference = result
         return result
 
     @ProgressPreference.setter
-    def ProgressPreference(self, value):
+    def ProgressPreference(self, value: Any) -> None:
         self.Runspace.SessionStateProxy.SetVariable("ProgressPreference", value)
         self.ProgressPreference
 
     @contextlib.contextmanager
-    def Progress(self, preference):
+    def Progress(self, preference: Any) -> Generator[None, None, None]:
         pap = self.ProgressPreference
         self.ProgressPreference = preference
         try:
@@ -367,13 +385,13 @@ class PowerShell(ProxyBase):
         finally:
             self.ProgressPreference = pap
 
-    def cmd(self, cmd, **kwargs):
-        cmd = self.AddCommand(cmd)
+    def cmd(self, cmd: str | String, **kwargs: Any) -> list[Any]:
+        ps_cmd = self.AddCommand(cmd)
         for key, val in kwargs.items():
             if isinstance(val, bool) and val:
-                cmd.AddParameter(key)
+                ps_cmd.AddParameter(key)
             else:
-                cmd.AddParameter(key, self._customize_param(val))
+                ps_cmd.AddParameter(key, self._customize_param(val))
         result = self.Invoke()
         self.Commands.Clear()
         return [(self._customize_result(item)
@@ -382,122 +400,126 @@ class PowerShell(ProxyBase):
     # Special Folders
 
     @property
-    def WindowsPath(self) -> Path:
+    def WindowsPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.Windows
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def WindowsSystemPath(self) -> Path:
+    def WindowsSystemPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.System
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def UserProfilePath(self) -> Path:
+    def UserProfilePath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.UserProfile
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def DesktopPath(self) -> Path:
+    def DesktopPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.DesktopDirectory
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def ProgramsPath(self) -> Path:
+    def ProgramsPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.Programs
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def StartMenuPath(self) -> Path:
+    def StartMenuPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.StartMenu
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def StartupPath(self) -> Path:
+    def StartupPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.Startup
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def LocalApplicationDataPath(self) -> Path:
+    def LocalApplicationDataPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.LocalApplicationData
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def ApplicationDataPath(self) -> Path:
+    def ApplicationDataPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.ApplicationData
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def CommonDesktopPath(self) -> Path:
+    def CommonDesktopPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.CommonDesktopDirectory
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def CommonProgramsPath(self) -> Path:
+    def CommonProgramsPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.CommonPrograms
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def CommonStartMenuPath(self) -> Path:
+    def CommonStartMenuPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.CommonStartMenu
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def CommonStartupPath(self) -> Path:
+    def CommonStartupPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.CommonStartup
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
     @property
-    def CommonApplicationDataPath(self) -> Path:
+    def CommonApplicationDataPath(self) -> Path | None:
         kind = System.Environment.SpecialFolder.CommonApplicationData
         result = System.Environment.GetFolderPath(kind)
         return Path(result) if result is not None else None
 
+    # Current user info
+
     @property
     def CurrentUser(self) -> object:
-        from System.Security.Principal import WindowsIdentity
+        from System.Security.Principal import WindowsIdentity  # type: ignore[import-not-found]
         current_user = WindowsIdentity.GetCurrent()
         current_user.NetId = current_user.Name.split("\\")[1]
+        _current_user_data    = self._current_user_data
+        _EXTENDED_NAME_FORMAT = self._EXTENDED_NAME_FORMAT
         if not hasattr(current_user.__class__, "FullName"):
-            def FullName(self) -> str:
+            def FullName(self: object) -> str:
                 ad_parts = []
-                with contextlib.suppress(Exception):
-                    user_info = self._current_user_data(
-                                    self._EXTENDED_NAME_FORMAT.NameFullyQualifiedDN)
+                with contextlib.suppress(builtins.Exception):
+                    user_info = _current_user_data(
+                                    _EXTENDED_NAME_FORMAT.NameFullyQualifiedDN)
                     ad_parts  = [part.replace("\0", ",").strip().partition("=")
                                  for part in user_info.replace(r"\,", "\0").split(",")]
-                full_name = next((value.strip() for key, sep, value in ad_parts
-                                  if sep and key.strip().upper() == "CN"), None)
-                is_full_name = full_name is not None
-                if not is_full_name:
+                try:
+                    full_name = next((value.strip() for key, sep, value in ad_parts
+                                      if sep and key.strip().upper() == "CN"))
+                    name_parts = (item.strip()
+                                  for item in reversed(full_name.split(",", maxsplit=1)))
+                except StopIteration:
                     full_name = current_user.UPN.rsplit("@", maxsplit=1)[0]
-                return " ".join((item.strip()
-                                 for item in reversed(full_name.split(",", maxsplit=1)))
-                                if is_full_name else
-                                (item.strip().capitalize()
-                                 for item in full_name.rsplit(".", maxsplit=1))).strip()
+                    name_parts = (item.strip().capitalize()
+                                  for item in full_name.rsplit(".", maxsplit=1))
+                return " ".join(name_parts).strip()
             current_user.__class__.FullName = property(FullName)
         if not hasattr(current_user.__class__, "IsAdmin"):
-            def IsAdmin(self) -> bool:
+            def IsAdmin(self: object) -> bool:
                 from System.Security.Principal import WindowsPrincipal, WindowsBuiltInRole
                 principal = WindowsPrincipal(self)
                 return principal and bool(principal.IsInRole(WindowsBuiltInRole.Administrator))
             current_user.__class__.IsAdmin = property(IsAdmin)
         if not hasattr(current_user.__class__, "UPN"):
-            def UPN(self) -> str:
-                return self._current_user_data(self._EXTENDED_NAME_FORMAT.NameUserPrincipal)
+            def UPN(self: object) -> str:
+                return _current_user_data(_EXTENDED_NAME_FORMAT.NameUserPrincipal)
             current_user.__class__.UPN = property(UPN)
         return current_user
 
@@ -540,12 +562,12 @@ class PowerShell(ProxyBase):
 
     _ForEach_Object = CmdLet("ForEach-Object")
 
-    def ForEach_Object(self, InputObject, **kwargs):
+    def ForEach_Object(self, InputObject: Any, **kwargs: Any) -> Any:
         return self._ForEach_Object(InputObject=InputObject, **kwargs)
 
     _Where_Object = CmdLet("Where-Object")
 
-    def Where_Object(self, InputObject, **kwargs):
+    def Where_Object(self, InputObject: Any, **kwargs: Any) -> Any:
         return self._Where_Object(InputObject=InputObject, **kwargs)
 
     Start_Job = CmdLet("Start-Job")
@@ -589,7 +611,7 @@ class PowerShell(ProxyBase):
 
     _Get_ItemPropertyValue = CmdLet("Get-ItemPropertyValue")
 
-    def Get_ItemPropertyValue(self, **kwargs):
+    def Get_ItemPropertyValue(self, **kwargs: Any) -> Iterable[Any]:
         return (self._Get_ItemPropertyValue(**kwargs)
                 if self.Get_ItemProperty(**kwargs) else [])
 
@@ -607,7 +629,7 @@ class PowerShell(ProxyBase):
     Start_Process = CmdLet("Start-Process")
     _Stop_Process = CmdLet("Stop-Process")
 
-    def Stop_Process(self, **kwargs):
+    def Stop_Process(self, **kwargs: Any) -> Any:
         Force = kwargs.pop("Force", True)
         return self._Stop_Process(Force=Force, **kwargs)
 
@@ -689,7 +711,7 @@ class PowerShell(ProxyBase):
 
     _Write_Host = CmdLet("Write-Host", flatten_result=True)
 
-    def Write_Host(self, Object, **kwargs):
+    def Write_Host(self, Object: Any, **kwargs: Any) -> Any:
         preference = self._customize_ActionPreference(kwargs.get("InformationAction",
                                                       Automation.ActionPreference.Continue))
         if preference == Automation.ActionPreference.Ignore:
@@ -701,7 +723,7 @@ class PowerShell(ProxyBase):
 
     _Write_Information = CmdLet("Write-Information", flatten_result=True)
 
-    def Write_Information(self, Msg, **kwargs):
+    def Write_Information(self, Msg: Any, **kwargs: Any) -> Any:
         preference = self._customize_ActionPreference(kwargs.get("InformationAction",
                                                                  self.InformationPreference))
         with self.Information(preference):
@@ -709,7 +731,7 @@ class PowerShell(ProxyBase):
 
     _Write_Warning = CmdLet("Write-Warning", flatten_result=True)
 
-    def Write_Warning(self, Msg, **kwargs):
+    def Write_Warning(self, Msg: Any, **kwargs: Any) -> Any:
         preference = self._customize_ActionPreference(kwargs.get("WarningAction",
                                                                  self.WarningPreference))
         with self.Warning(preference):
@@ -717,12 +739,12 @@ class PowerShell(ProxyBase):
 
     _Write_Error = CmdLet("Write-Error", flatten_result=True)
 
-    def Write_Error(self, Msg, **kwargs):
+    def Write_Error(self, Msg: Any, **kwargs: Any) -> Any:
         return self._Write_Error(Msg=Msg, **kwargs)
 
     _Write_Verbose = CmdLet("Write-Verbose", flatten_result=True)
 
-    def Write_Verbose(self, Msg, **kwargs):
+    def Write_Verbose(self, Msg: Any, **kwargs: Any) -> Any:
         preference = (self.VerbosePreference if "Verbose" not in kwargs else
                       Automation.ActionPreference.Continue if kwargs["Verbose"] else
                       Automation.ActionPreference.SilentlyContinue)
@@ -731,7 +753,7 @@ class PowerShell(ProxyBase):
 
     _Write_Debug = CmdLet("Write-Debug", flatten_result=True)
 
-    def Write_Debug(self, Msg, **kwargs):
+    def Write_Debug(self, Msg: Any, **kwargs: Any) -> Any:
         preference = (self.DebugPreference if "Debug" not in kwargs else
                       Automation.ActionPreference.Inquire if kwargs["Debug"] else
                       Automation.ActionPreference.SilentlyContinue)
@@ -740,26 +762,26 @@ class PowerShell(ProxyBase):
 
     _Write_Progress = CmdLet("Write-Progress", flatten_result=True)
 
-    def Write_Progress(self, Activity, **kwargs):
+    def Write_Progress(self, Activity: Any, **kwargs: Any) -> Any:
         preference = self.ProgressPreference
         with self.Progress(preference):
             return self._Write_Progress(Activity=Activity, **kwargs)
 
     _Write_Output = CmdLet("Write-Output", flatten_result=True)
 
-    def Write_Output(self, InputObject, **kwargs):
+    def Write_Output(self, InputObject: Any, **kwargs: Any) -> Any:
         return self._Write_Output(InputObject=InputObject, **kwargs)
 
     _Read_Host = CmdLet("Read-Host", flatten_result=True)
 
-    def Read_Host(self, Prompt, **kwargs):
+    def Read_Host(self, Prompt: Any, **kwargs: Any) -> Any:
         if Prompt is None:
             return self._Read_Host(**kwargs)
         else:
             return self._Read_Host(Prompt=Prompt, **kwargs)
 
     @classmethod
-    def _customize_ActionPreference(cls, preference):
+    def _customize_ActionPreference(cls, preference: Any) -> Any:
         if isinstance(preference, Automation.ActionPreference):
             return preference
         elif (isinstance(preference, int)
@@ -860,12 +882,13 @@ class PowerShell(ProxyBase):
     # Misc internal utilities
 
     @staticmethod
-    def hashable2dict(hashable: Dictionary) -> dict:
+    def hashable2dict(hashable: Dictionary) -> dict[Any, Any]:
         return {item.Key: item.Value for item in hashable}
 
     @staticmethod
     def hashable2defaultdict(hashable: Dictionary,
-                             default_factory=None) -> defaultdict:
+                             default_factory: AnyCallable | None = None) \
+                             -> defaultdict[Any, Any]:
         return defaultdict(default_factory,
                            PowerShell.hashable2dict(hashable))
 
@@ -875,43 +898,44 @@ class PowerShell(ProxyBase):
 
     @staticmethod
     def hashable2defaultadict(hashable: Dictionary,
-                              default_factory=None) -> defaultadict:
+                              default_factory: AnyCallable | None = None) \
+                              -> defaultadict:
         return defaultadict(default_factory,
                             PowerShell.hashable2dict(hashable))
 
     @staticmethod
-    def dict2hashtable(dic: Dict) -> Dictionary:
+    def dict2hashtable(dic: dict[Any, Any]) -> Dictionary:
         htable = Hashtable()
         for key, val in dic.items():
             htable[key] = val
         return htable
 
     @staticmethod
-    def flatten_result(result):
+    def flatten_result(result: Sequence[Any] | None) -> Any:
         return None if not result else result[0] if len(result) == 1 else result
 
     @staticmethod
-    def _customize_param(val):
+    def _customize_param(val: Any) -> Any:
         if isinstance(val, os.PathLike):
             return str(val)
-        # elif isinstance(val, Dict):
+        # elif isinstance(val, dict):
         #     return PowerShell._customize_dict(val)
         else:
             return val
 
     @staticmethod
-    def _customize_dict(dic):
+    def _customize_dict(dic: dict[Any, Any]) -> dict[Any, Any]:
         dic = dic.copy()
         for key, val in dic.items():
             if isinstance(val, os.PathLike):
                 dic[key] = str(val)
         return dic
 
-    def _customize_result(self, item):
+    def _customize_result(self, item: PSObject) -> Any:
         if isinstance(item.BaseObject, PSCustomObject):
-            item = PSCustomObjectProxy(item)
-            item._ps = self
-            return item
+            item_proxy = PSCustomObjectProxy(item)
+            item_proxy._ps = self
+            return item_proxy
         else:
             return item.BaseObject
 

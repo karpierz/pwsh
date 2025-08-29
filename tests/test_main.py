@@ -21,6 +21,8 @@ class PowerShellTestCase(unittest.TestCase):
         import pwsh
         cls.ps = pwsh.ps
         cls.lock = threading.Lock()
+        from System.Management import Automation
+        cls.Automation = Automation
 
     @classmethod
     def tearDownClass(cls):
@@ -32,8 +34,174 @@ class PowerShellTestCase(unittest.TestCase):
     def tearDown(self):
         self.lock.release()
 
+
+class PowerShell_Main_TestCase(PowerShellTestCase):
+
     def test_main(self):
-        pass
+        ps = self.ps
+
+        sys_drive = ps.env.SystemDrive
+        sys_root  = ps.env.SystemRoot
+        temp_dir  = ps.env.TEMP
+        non_exist = ps.env.__NON_EXISTENT_ENV_VARIABLE_
+
+        value = ps.Host
+
+        value = ps.Error
+
+        value = ps.ErrorView
+
+        #@ErrorView.setter
+        #def ErrorView(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("ErrorView", value)
+
+        value = ps.ErrorActionPreference
+        self.assertIsInstance(value, self.Automation.ActionPreference)
+        self.assertEqual(value, self.Automation.ActionPreference.Stop)
+
+        #@ErrorActionPreference.setter
+        #def ErrorActionPreference(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("ErrorActionPreference", value)
+        #    self.ErrorActionPreference
+
+        #@contextlib.contextmanager
+        #def ErrorAction(self, preference):
+        #    eap = self.ErrorActionPreference
+        #    self.ErrorActionPreference = preference
+        #    try:
+        #        yield
+        #    finally:
+        #        self.ErrorActionPreference = eap
+
+        value = ps.WarningPreference
+        self.assertIsInstance(value, self.Automation.ActionPreference)
+        self.assertEqual(value, self.Automation.ActionPreference.Continue)
+
+        #@WarningPreference.setter
+        #def WarningPreference(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("WarningPreference", value)
+        #    self.WarningPreference
+
+        #@contextlib.contextmanager
+        #def Warning(self, preference):  # noqa: A003
+        #    pap = self.WarningPreference
+        #    self.WarningPreference = preference
+        #    try:
+        #        yield
+        #    finally:
+        #        self.WarningPreference = pap
+
+        value = ps.VerbosePreference
+        self.assertIsInstance(value, self.Automation.ActionPreference)
+        self.assertEqual(value, self.Automation.ActionPreference.SilentlyContinue)
+
+        #@VerbosePreference.setter
+        #def VerbosePreference(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("VerbosePreference", value)
+        #    self.VerbosePreference
+
+        #@contextlib.contextmanager
+        #def Verbose(self, preference):
+        #    pap = self.VerbosePreference
+        #    self.VerbosePreference = preference
+        #    try:
+        #        yield
+        #    finally:
+        #        self.VerbosePreference = pap
+
+        value = ps.DebugPreference
+        self.assertIsInstance(value, self.Automation.ActionPreference)
+        self.assertEqual(value, self.Automation.ActionPreference.SilentlyContinue)
+
+        #@DebugPreference.setter
+        #def DebugPreference(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("DebugPreference", value)
+        #    self.DebugPreference
+
+        #@contextlib.contextmanager
+        #def Debug(self, preference):
+        #    pap = self.DebugPreference
+        #    self.DebugPreference = preference
+        #    try:
+        #        yield
+        #    finally:
+        #        self.DebugPreference = pap
+
+        value = ps.InformationPreference
+        self.assertIsInstance(value, self.Automation.ActionPreference)
+        self.assertEqual(value, self.Automation.ActionPreference.SilentlyContinue)
+
+        #@InformationPreference.setter
+        #def InformationPreference(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("InformationPreference", value)
+        #    self.InformationPreference
+
+        #@contextlib.contextmanager
+        #def Information(self, preference):
+        #    pap = self.InformationPreference
+        #    self.InformationPreference = preference
+        #    try:
+        #        yield
+        #    finally:
+        #        self.InformationPreference = pap
+
+        value = ps.ProgressPreference
+        self.assertIsInstance(value, self.Automation.ActionPreference)
+        self.assertEqual(value, self.Automation.ActionPreference.Continue)
+
+        #@ProgressPreference.setter
+        #def ProgressPreference(self, value):
+        #    self.Runspace.SessionStateProxy.SetVariable("ProgressPreference", value)
+        #    self.ProgressPreference
+
+        #@contextlib.contextmanager
+        #def Progress(self, preference):
+        #    pap = self.ProgressPreference
+        #    self.ProgressPreference = preference
+        #    try:
+        #        yield
+        #    finally:
+        #        self.ProgressPreference = pap
+
+    def test_special_folders(self):
+        ps = self.ps
+
+        # Special Folders
+
+        folder_path = ps.WindowsPath
+
+        folder_path = ps.WindowsSystemPath
+
+        folder_path = ps.UserProfilePath
+
+        folder_path = ps.DesktopPath
+
+        folder_path = ps.ProgramsPath
+
+        folder_path = ps.StartMenuPath
+
+        folder_path = ps.StartupPath
+
+        folder_path = ps.LocalApplicationDataPath
+
+        folder_path = ps.ApplicationDataPath
+
+        folder_path = ps.CommonDesktopPath
+
+        folder_path = ps.CommonProgramsPath
+
+        folder_path = ps.CommonStartMenuPath
+
+        folder_path = ps.CommonStartupPath
+
+        folder_path = ps.CommonApplicationDataPath
+
+    def test_current_user_info(self):
+        ps = self.ps
+
+        # Current user info
+
+        current_user = ps.CurrentUser
 
     def test_streams(self):
         ps = self.ps
@@ -48,7 +216,7 @@ class PowerShellTestCase(unittest.TestCase):
         # ps.Streams.Progress     n/a       Write-Progress
         #
         ps.Write_Host("")
-        #ps.Write_Output("Write_Output !!!")
+        ps.Write_Output("Write_Output !!!")
         #ps.Write_Error("Write_Error !!!")
         ps.Write_Host("Write_Host !!!")  #, InformationAction="Ignore")
         # ps.InformationPreference = "Continue"

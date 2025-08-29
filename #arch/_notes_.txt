@@ -1,0 +1,12 @@
+# Powershell redirecting
+https://github.com/PowerShell/PowerShell/issues/10737
+https://github.com/PowerShell/PowerShell/issues/7477
+https://stackoverflow.com/questions/27254198/why-cant-i-write-error-from-powershell-streams-error-add-dataadded
+https://stackoverflow.com/questions/74472642/capturing-all-streams-in-correct-sequence-with-powershell-sdk
+https://mjolinor.wordpress.com/2014/06/03/invoke-scritptasync-v2/
+# lib for PowerShell v.5.1.x
+https://www.nuget.org/packages/Microsoft.PowerShell.5.1.ReferenceAssemblies
+# libs for PowerShell v.7..x.x (included in PowerShell v.7.x.x)
+https://www.nuget.org/packages/System.Management.Automation
+https://www.nuget.org/packages/Microsoft.Management.Infrastructure
+https://www.nuget.org/packages/Microsoft.Management.Infrastructure.CimCmdlets
