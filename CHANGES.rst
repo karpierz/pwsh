@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.3.7 (2025-11-13)
+------------------
+- 100% code linting.
+- Utils come from py-utlx.
+- Add tox's tool.tox.env.cleanup testenv.
+- Setup (dependencies) update.
+
 0.3.6 (2025-08-28)
 ------------------
 - | Import of internal PowerShell assemblies has been improved and is

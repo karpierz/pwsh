@@ -52,7 +52,6 @@ class Microsoft_PowerShell_Management_TestCase(PowerShellTestCase):
 
         ps.Get_Process#()
         ps.Start_Process#()
-
         ps.Stop_Process#()
 
         ps.New_Service#()
