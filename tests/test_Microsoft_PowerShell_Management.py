@@ -42,7 +42,7 @@ class Microsoft_PowerShell_Management_TestCase(PowerShellTestCase):
         ps.Get_ItemPropertyValue#()
 
         ps.Test_Path#()
-
+        ps.Resolve_Path#()
         ps.Convert_Path#()
 
         ps.Get_Content#()
@@ -52,7 +52,6 @@ class Microsoft_PowerShell_Management_TestCase(PowerShellTestCase):
 
         ps.Get_Process#()
         ps.Start_Process#()
-
         ps.Stop_Process#()
 
         ps.New_Service#()

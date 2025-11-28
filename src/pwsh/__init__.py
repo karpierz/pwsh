@@ -5,13 +5,9 @@
 
 from .__about__ import * ; del __about__  # type: ignore[name-defined]  # noqa
 
-from ._pwsh   import * ; __all__ = _pwsh.__all__  # type: ignore[name-defined]  # noqa
-from ._run    import run
-from ._util   import issubtype
-from ._util   import issequence
-from ._util   import isiterable
-from ._unique import unique
-from ._unique import iter_unique
-del _pwsh, _adict, _epath, _modpath  # type: ignore[name-defined]  # noqa
-del _run, _util, _unique             # type: ignore[name-defined]  # noqa
+from ._pwsh import * ; del _pwsh  # type: ignore[name-defined]  # noqa
+from utlx import run
+from utlx import issubtype, issequence, isiterable
+from utlx import unique, iter_unique
+
 out_null = dict(stdout=run.DEVNULL, stderr=run.DEVNULL)
