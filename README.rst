@@ -84,7 +84,7 @@ Authors
 
 .. |package| replace:: pwsh
 .. |package_bold| replace:: **pwsh**
-.. |copyright| replace:: Copyright (c) 2024-2025 Adam Karpierz
+.. |copyright| replace:: Copyright (c) 2024-2026 Adam Karpierz
 .. |respository| replace:: https://github.com/karpierz/pwsh.git
 .. _Development page: https://github.com/karpierz/pwsh
 .. _PyPI record: https://pypi.org/project/pwsh/

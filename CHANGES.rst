@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.4.0 (2025-11-30)
+------------------
+- 100% code linting.
+- Add Resolve_Path().
+- Utils come from py-utlx.
+- Copyright year update.
+- Add tox's tool.tox.env.cleanup testenv.
+- Setup (dependencies) update.
+
 0.3.6 (2025-08-28)
 ------------------
 - | Import of internal PowerShell assemblies has been improved and is

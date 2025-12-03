@@ -4,41 +4,40 @@
 # SPDX-License-Identifier: Zlib
 
 from typing import TypeAlias, Any
+from typing_extensions import Self
 from collections.abc import Callable, Iterable, Sequence, Generator
+from os import PathLike
 import builtins
 import sys
-import os
-import pathlib
-import shutil
 import contextlib
 from enum import IntEnum
 from collections import defaultdict
 import clr     # type: ignore[import-untyped]
 import System  # type: ignore[import-not-found]
-from System import String
+from System import Array, String
 from System.Collections.Generic import Dictionary  # type: ignore[import-not-found]
 from System.Collections import Hashtable           # type: ignore[import-not-found]
 
-from public import public
+from utlx import public
 from nocasedict import NocaseDict
 from zope.proxy import (ProxyBase, non_overridable,  # type: ignore[import-untyped]  # noqa: F401
                         getProxiedObject, setProxiedObject)
 from tqdm import tqdm  # noqa: F401
 from colored import cprint
 
-from ._adict   import adict, defaultadict
-from ._epath   import Path  # type: ignore[attr-defined]  # !!! temporary !!!
-from ._modpath import module_path as _mpath
+from utlx import adict, defaultadict
+from utlx import Path
+from utlx import module_path as _mpath
 
 AnyCallable: TypeAlias = Callable[..., Any]
 
-powershell_path = shutil.which("powershell.exe")
+powershell_path = Path.which("powershell.exe")
 if powershell_path is None:
     raise AssertionError("powershell.exe was not found!")
 
 clr.AddReference("System.ServiceProcess")
-sys.path.append(str(pathlib.Path(powershell_path).parent))
-sys.path.append(str(pathlib.Path(__file__).resolve().parent/"lib"))
+sys.path.append(str(powershell_path.parent))
+sys.path.append(str(Path(__file__).resolve().parent/"lib"))
 clr.AddReference("System.Management.Automation")
 clr.AddReference("Microsoft.Management.Infrastructure")
 from System.Management import Automation           # type: ignore[import-not-found]
@@ -122,7 +121,7 @@ class CmdLet:
 class PowerShell(ProxyBase):  # type: ignore[misc]
     """Poweshell API"""
 
-    def __new__(cls, obj: Automation.PowerShell | None = None) -> 'PowerShell':
+    def __new__(cls, obj: Automation.PowerShell | None = None) -> Self:
         """Constructor"""
         self: PowerShell = super().__new__(cls,
                                            Automation.PowerShell.Create()
@@ -617,7 +616,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
 
     Test_Path = CmdLet("Test-Path",
         customize_result = lambda self, result: bool(result[0]))
-
+    Resolve_Path = CmdLet("Resolve-Path")
     Convert_Path = CmdLet("Convert-Path")
 
     Get_Content   = CmdLet("Get-Content")
@@ -625,9 +624,15 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     Add_Content   = CmdLet("Add-Content")
     Clear_Content = CmdLet("Clear-Content")
 
-    Get_Process   = CmdLet("Get-Process")
-    Start_Process = CmdLet("Start-Process")
-    _Stop_Process = CmdLet("Stop-Process")
+    Get_Process    = CmdLet("Get-Process")
+    _Start_Process = CmdLet("Start-Process")
+    _Stop_Process  = CmdLet("Stop-Process")
+
+    def Start_Process(self, **kwargs: Any) -> Any:
+        kwargs = kwargs.copy()
+        if "ArgumentList" in kwargs:
+            kwargs["ArgumentList"] = Array[String](kwargs["ArgumentList"])
+        return self._Start_Process(**kwargs)
 
     def Stop_Process(self, **kwargs: Any) -> Any:
         Force = kwargs.pop("Force", True)
@@ -677,6 +682,8 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     Add_Member    = CmdLet("Add-Member")
 
     Set_Alias = CmdLet("Set-Alias")
+
+    Select_String = CmdLet("Select-String")  # , flatten_result=True)
 
     Format_Hex    = CmdLet("Format-Hex")
     Format_List   = CmdLet("Format-List")
@@ -889,8 +896,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     def hashable2defaultdict(hashable: Dictionary,
                              default_factory: AnyCallable | None = None) \
                              -> defaultdict[Any, Any]:
-        return defaultdict(default_factory,
-                           PowerShell.hashable2dict(hashable))
+        return defaultdict(default_factory, PowerShell.hashable2dict(hashable))
 
     @staticmethod
     def hashable2adict(hashable: Dictionary) -> adict:
@@ -900,8 +906,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     def hashable2defaultadict(hashable: Dictionary,
                               default_factory: AnyCallable | None = None) \
                               -> defaultadict:
-        return defaultadict(default_factory,
-                            PowerShell.hashable2dict(hashable))
+        return defaultadict(default_factory, PowerShell.hashable2dict(hashable))
 
     @staticmethod
     def dict2hashtable(dic: dict[Any, Any]) -> Dictionary:
@@ -916,7 +921,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
 
     @staticmethod
     def _customize_param(val: Any) -> Any:
-        if isinstance(val, os.PathLike):
+        if isinstance(val, PathLike):
             return str(val)
         # elif isinstance(val, dict):
         #     return PowerShell._customize_dict(val)
@@ -927,7 +932,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     def _customize_dict(dic: dict[Any, Any]) -> dict[Any, Any]:
         dic = dic.copy()
         for key, val in dic.items():
-            if isinstance(val, os.PathLike):
+            if isinstance(val, PathLike):
                 dic[key] = str(val)
         return dic
 
