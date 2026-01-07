@@ -10,3 +10,6 @@ https://www.nuget.org/packages/Microsoft.PowerShell.5.1.ReferenceAssemblies
 https://www.nuget.org/packages/System.Management.Automation
 https://www.nuget.org/packages/Microsoft.Management.Infrastructure
 https://www.nuget.org/packages/Microsoft.Management.Infrastructure.CimCmdlets
+
+# Pythonnet's wheel for Python 3.14
+py -3.14 -m pip wheel git+https://github.com/pythonnet/pythonnet.git@python3.14 --wheel-dir whl

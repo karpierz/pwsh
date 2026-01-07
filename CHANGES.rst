@@ -1,6 +1,32 @@
 Changelog
 =========
 
+0.5.0 (2026-01-01)
+------------------
+- Added CmdLets:
+
+  + Module: Microsoft.PowerShell.Core
+  +   Wait_Job, Receive_Job, Remove_Job, Debug_Job,
+  +   Get_History, Clear_History, Add_History, Invoke_History,
+  + Module: Microsoft.PowerShell.Management
+  +   Get_Location, Set_Location,
+  +   Wait_Process, Debug_Process,
+  +   Restart_Service, Suspend_Service, Resume_Service, Set_Service,
+  + Module: Microsoft.PowerShell.Utility
+  +   Sort_Object, Group_Object, Compare_Object, Select_Xml
+  + Module: DISM
+  +   Get_WindowsEdition
+
+- Updated CmdLets:
+
+  + Module: Microsoft.PowerShell.Management
+  +   Stop_Process  - -Force is now default.
+  +   Get_WmiObject - obsoleted, removed due to incompatibility with v.6.0+
+
+- Add support for Python 3.14
+- Mark the package as typed.
+- Setup (dependencies) update.
+
 0.4.0 (2025-11-30)
 ------------------
 - 100% code linting.

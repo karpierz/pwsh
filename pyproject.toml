@@ -3,11 +3,11 @@
 
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools>=80.9.0', 'packaging>=25.0.0', 'tox>=4.32.0']
+requires = ['setuptools>=80.9.0', 'packaging>=25.0.0', 'tox>=4.33.0']
 
 [project]
 name        = 'pwsh'
-version     = '0.4.0'
+version     = '0.5.0'
 description = 'Provides API for PowerShell.'
 authors = [
     { name  = 'Adam Karpierz', email = 'adam@karpierz.net' },
@@ -34,6 +34,7 @@ classifiers = [
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
     'Programming Language :: Python :: 3 :: Only',
     'Programming Language :: Python :: Implementation :: CPython',
     'Topic :: Software Development :: Libraries :: Python Modules',
@@ -47,9 +48,10 @@ dependencies = [
     'pkg-about>=2.0.0',
     # others
     'py-utlx>=2.0.0',
-    'nocasedict>=2.1.0',
+    'nocasedict>=2.2.0',
     'zope.proxy>=7.1.0',
-    'pythonnet>=3.0.5',
+    'pythonnet>=3.0.5 ; python_version <= "3.13"',
+    'pythonnet @ https://raw.githubusercontent.com/karpierz/pwsh/main/whl/pythonnet-3.1.0.dev0-py3-none-any.whl ; python_version >= "3.14"',
     'colored>=2.3.1',
     'tqdm>=4.67.1',
 ]
@@ -57,7 +59,7 @@ dynamic = ['readme']
 optional-dependencies.'doc' = [
     'sphinx>=8.1.3',
     'sphinx-autodoc-typehints>=3.0.1',
-    'sphinx-toolbox>=4.0.0',
+    'sphinx-toolbox>=4.1.1',
     'sphinx-tabs>=3.4.5', # don't touch! sphinx-toolbox requires <3.4.7
     'sphinx-copybutton>=0.5.2',
     'sphinxcontrib-spelling>=8.0.2',
@@ -181,12 +183,12 @@ env_list = [{replace='ref',of=['tool','tox','labels','py'],extend=true},
 skip_missing_interpreters = true
 requires = [
     {replace='ref',of=['tool','tox','_','base','deps'],extend=true},
-    'tox>=4.32.0',
+    'tox>=4.33.0',
     'virtualenv>=20.35.4',
     'tox-backtick>=2.0.0',
 ]
 [tool.tox.labels]
-py = ['py310','py311','py312','py313']
+py = ['py310','py311','py312','py313','py314']
 prepare = ['cleanup', 'prepare']
 cleanup = ['cleanup']
 coverage = ['coverage']
@@ -261,9 +263,9 @@ commands = [
 ]
 deps = [
     {replace='ref',of=['tool','tox','env_run_base','deps'],extend=true},
-    'coverage>=7.12.0',
+    'coverage>=7.13.1',
     'covdefaults>=2.3.0',
-    'diff-cover>=9.7.2',
+    'diff-cover>=10.1.0',
 ]
 
 [tool.tox.env.'docs']
@@ -318,9 +320,9 @@ commands = [
 extras = []
 deps = [
     {replace='ref',of=['tool','tox','_','base','deps'],extend=true},
-    'mypy>=1.19.0',
+    'mypy>=1.19.1',
     'mypy_extensions>=1.1.0',
-    'types-setuptools>=80.9.0.20250822',
+    'types-setuptools>=80.9.0.20251223',
     'types-tqdm>=4.67.0.20250809',
 ]
 

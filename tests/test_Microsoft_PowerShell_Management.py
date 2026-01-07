@@ -62,5 +62,3 @@ class Microsoft_PowerShell_Management_TestCase(PowerShellTestCase):
         ps.Get_PSDrive#()
         ps.New_PSDrive#()
         ps.Remove_PSDrive#()
-
-        ps.Get_WmiObject#()
