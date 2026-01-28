@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Changelog &#8212; pwsh 0.5.3 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=5283bb3d" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+    
+    <script src="_static/documentation_options.js?v=2a2fe768"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/tabs.js?v=3030b3cb"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="pwsh documentation" href="index.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="pwsh documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pwsh 0.5.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Changelog</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="changelog">
+<span id="changes"></span><h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
+<section id="id1">
+<h2>0.5.3 (2026-01-27)<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added CmdLets:</p>
+<ul>
+<li><p>Module: Microsoft.PowerShell.Core</p></li>
+<li><p>Wait_Job, Receive_Job, Remove_Job, Debug_Job,</p></li>
+<li><p>Get_History, Clear_History, Add_History, Invoke_History,</p></li>
+<li><p>Module: Microsoft.PowerShell.Management</p></li>
+<li><p>Get_Location, Set_Location,</p></li>
+<li><p>Wait_Process, Debug_Process,</p></li>
+<li><p>Restart_Service, Suspend_Service, Resume_Service, Set_Service,</p></li>
+<li><p>Module: Microsoft.PowerShell.Utility</p></li>
+<li><p>Sort_Object, Group_Object, Compare_Object, Select_Xml</p></li>
+<li><p>Module: DISM</p></li>
+<li><p>Get_WindowsEdition</p></li>
+</ul>
+</li>
+<li><p>Updated CmdLets:</p>
+<ul>
+<li><p>Module: Microsoft.PowerShell.Management</p></li>
+<li><p>Stop_Process  - -Force is now default.</p></li>
+<li><p>Get_WmiObject - obsoleted, removed due to incompatibility with v.6.0+</p></li>
+</ul>
+</li>
+<li><p>Added support for Python 3.14</p></li>
+<li><p>BugFixes for PowerShell.*Path propetries.</p></li>
+<li><p>Expanding the set of known environment variables that represent paths.</p></li>
+<li><p>Improved type checking.</p></li>
+<li><p>Prepared and marked the package as typed.</p></li>
+<li><p>Switched from tox to Nox for project automation.</p></li>
+<li><p>The documentation has been moved from Read the Docs to GitHub Pages.</p></li>
+<li><p>Setup update (mainly dependencies) and bug fixes.</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>0.4.0 (2025-11-30)<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>100% code linting.</p></li>
+<li><p>Add Resolve_Path().</p></li>
+<li><p>Utils come from py-utlx.</p></li>
+<li><p>Copyright year update.</p></li>
+<li><p>Added the ‘tool.tox.env.cleanup’ test environment.</p></li>
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>0.3.6 (2025-08-28)<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<ul>
+<li><div class="line-block">
+<div class="line">Import of internal PowerShell assemblies has been improved and is</div>
+<div class="line">now more portable between different versions of PowerShell.</div>
+<div class="line">From now on, assemblies are first imported from own PowerShell set.</div>
+</div>
+</li>
+<li><p>Making the package typed (but should be enhanced and more restricted).</p></li>
+<li><p>General improvements and cleanup.</p></li>
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>0.3.4 (2025-06-11)<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Little cleanup.</p></li>
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id5">
+<h2>0.3.3 (2025-05-15)<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>The distribution is now built using ‘build’ instead of ‘setuptools’.</p></li>
+<li><p>Setup update (mainly dependencies) (due to regressions in tox and setuptools).</p></li>
+</ul>
+</section>
+<section id="id6">
+<h2>0.3.2 (2025-05-08)<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Support for PyPy has been removed (due to problems with pythonnet).</p></li>
+<li><p>Dropped support for Python 3.9 (due to compatibility issues).</p></li>
+<li><p>Add ‘Host’ property.</p></li>
+<li><p>Add ‘DebugPreference’ property.</p></li>
+<li><div class="line-block">
+<div class="line">Bugfix: Most outputs of the Write_*() cmdlet’s are now visible in the</div>
+<div class="line">Python console (outputs of the Write_Output() are still not visible).</div>
+</div>
+</li>
+<li><p>Updated Read the Docs’ Python version to 3.13</p></li>
+<li><p>Updated tox’s base_python to version 3.13</p></li>
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id7">
+<h2>0.2.11 (2025-04-24)<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix for Stop_Process. -Force is now the default.</p></li>
+<li><p>Change base_python to Python 3.13</p></li>
+</ul>
+</section>
+<section id="id8">
+<h2>0.2.9 (2025-04-10)<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix compability for Python &gt;= 3.13</p></li>
+</ul>
+</section>
+<section id="id9">
+<h2>0.2.8 (2025-03-30)<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add New_Service().</p></li>
+</ul>
+</section>
+<section id="id10">
+<h2>0.2.6 (2025-03-25)<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add LocalApplicationDataPath property.</p></li>
+</ul>
+</section>
+<section id="id11">
+<h2>0.2.5 (2025-03-20)<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added support for PyPy 3.11</p></li>
+<li><p>Dropped support for PyPy 3.9</p></li>
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id12">
+<h2>0.2.3 (2025-02-14)<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id13">
+<h2>0.2.2 (2025-02-10)<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add reference to the System.ServiceProcess</p></li>
+<li><p>Copyright year update.</p></li>
+</ul>
+</section>
+<section id="id14">
+<h2>0.2.0 (2025-02-02)<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Copyright year update.</p></li>
+<li><p>Tox configuration is now in native (toml) format.</p></li>
+<li><p>Setup update (mainly dependencies).</p></li>
+</ul>
+</section>
+<section id="id15">
+<h2>0.1.0 (2024-10-30)<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>First release.</p></li>
+</ul>
+</section>
+<section id="id16">
+<h2>0.0.0 (2024-08-13)<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Initial commit.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Changelog</a><ul>
+<li><a class="reference internal" href="#id1">0.5.3 (2026-01-27)</a></li>
+<li><a class="reference internal" href="#id2">0.4.0 (2025-11-30)</a></li>
+<li><a class="reference internal" href="#id3">0.3.6 (2025-08-28)</a></li>
+<li><a class="reference internal" href="#id4">0.3.4 (2025-06-11)</a></li>
+<li><a class="reference internal" href="#id5">0.3.3 (2025-05-15)</a></li>
+<li><a class="reference internal" href="#id6">0.3.2 (2025-05-08)</a></li>
+<li><a class="reference internal" href="#id7">0.2.11 (2025-04-24)</a></li>
+<li><a class="reference internal" href="#id8">0.2.9 (2025-04-10)</a></li>
+<li><a class="reference internal" href="#id9">0.2.8 (2025-03-30)</a></li>
+<li><a class="reference internal" href="#id10">0.2.6 (2025-03-25)</a></li>
+<li><a class="reference internal" href="#id11">0.2.5 (2025-03-20)</a></li>
+<li><a class="reference internal" href="#id12">0.2.3 (2025-02-14)</a></li>
+<li><a class="reference internal" href="#id13">0.2.2 (2025-02-10)</a></li>
+<li><a class="reference internal" href="#id14">0.2.0 (2025-02-02)</a></li>
+<li><a class="reference internal" href="#id15">0.1.0 (2024-10-30)</a></li>
+<li><a class="reference internal" href="#id16">0.0.0 (2024-08-13)</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">pwsh documentation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/CHANGES.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="pwsh documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pwsh 0.5.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Changelog</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright Adam Karpierz.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    </div>
+  </body>
+</html>
