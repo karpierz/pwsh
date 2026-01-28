@@ -27,10 +27,9 @@ Prerequisites:
   * https://www.python.org/
   * ATTENTION: currently works and is only tested under Windows.
 
-+ pip and setuptools
++ pip
 
   * https://pypi.org/project/pip/
-  * https://pypi.org/project/setuptools/
 
 To install run:
 
@@ -43,9 +42,9 @@ Development
 
 Prerequisites:
 
-+ Development is strictly based on *tox*. To install it run::
++ Development is strictly based on *nox*. To install it run::
 
-    python -m pip install --upgrade tox
+    python -m pip install --upgrade nox
 
 Visit `Development page`_.
 
@@ -82,10 +81,21 @@ Authors
 
 * Adam Karpierz <adam@karpierz.net>
 
+Sponsoring
+==========
+
+| If you would like to sponsor the development of this project, your contribution
+  is greatly appreciated.
+| As I am now retired, any support helps me dedicate more time to maintaining and
+  improving this work.
+
+`Donate`_
+
 .. |package| replace:: pwsh
 .. |package_bold| replace:: **pwsh**
 .. |copyright| replace:: Copyright (c) 2024-2026 Adam Karpierz
-.. |respository| replace:: https://github.com/karpierz/pwsh.git
+.. |respository| replace:: https://github.com/karpierz/pwsh
 .. _Development page: https://github.com/karpierz/pwsh
 .. _PyPI record: https://pypi.org/project/pwsh/
-.. _Documentation: https://pw-sh.readthedocs.io/
+.. _Documentation: https://karpierz.github.io/pwsh/
+.. _Donate: https://www.paypal.com/donate/?hosted_button_id=FX8L7CJUGLW7S

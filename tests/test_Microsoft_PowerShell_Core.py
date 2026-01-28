@@ -27,11 +27,11 @@ class Microsoft_PowerShell_Core_TestCase(PowerShellTestCase):
         pwsh = ps.Get_Command(CommandType="Application",
                               Name="powershell.exe", TotalCount=1, EA="0")
         pwsh = Path(pwsh[0].Path) if pwsh else None
-        self.assertTrue(bool(pwsh))
+        self.assertIsNotNone(pwsh)
         unkn = ps.Get_Command(CommandType="Application",
                               Name="_unknows_executable_.exe", EA="0")
         unkn = Path(unkn[0].Path) if unkn else None
-        self.assertFalse(bool(unkn))
+        self.assertIsNone(unkn)
 
         ps.Invoke_Command#()
 
