@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.6.1 (2026-06-05)
+------------------
+- Dropped support for Python 3.10 (due to compatibility issues).
+- Fix for class PSCustomObjectProxy.
+- Fix for nox 'lint' session.
+- Setup updates, fixes and improvements.
+
 0.5.3 (2026-01-27)
 ------------------
 - Added CmdLets:

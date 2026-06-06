@@ -55,6 +55,8 @@ def module_path(*args: Any, **kwargs: Any) -> Path:
 
 class PSCustomObjectProxy(ProxyBase):  # type: ignore[misc]
 
+    __slots__ = ("_ps",)
+
     def __getattr__(self, name: str) -> Any:
         """Attribute access"""
         return self.Members[name].Value
@@ -917,7 +919,6 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     _Start_Process = CmdLet("Start-Process")
 
     def Start_Process(self, **kwargs: Any) -> Any:
-        kwargs = kwargs.copy()
         if "ArgumentList" in kwargs:
             kwargs["ArgumentList"] = Array[String](kwargs["ArgumentList"])
         return self._Start_Process(**kwargs)
