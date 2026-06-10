@@ -46,7 +46,7 @@ from System.Management.Automation import PSCustomObject
 # from Microsoft.Management.Infrastructure import *
 
 __all__ = ('adict', 'defaultadict', 'Path', 'PSObject', 'PSCustomObject',
-           'module_path', 'CmdLet', 'PowerShell', 'ps')
+           'PSCustomObjectProxy', 'module_path', 'CmdLet', 'PowerShell', 'ps')
 
 
 def module_path(*args: Any, **kwargs: Any) -> Path:
@@ -724,7 +724,6 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # Get-PSHostProcessInfo             Gets process information about the PowerShell host.
     # Get-PSSessionCapability           Gets the capabilities of a specific user on a constrained
     #                                   session configuration.
-    # Get-Verb                          Gets approved PowerShell verbs.
     # New-ModuleManifest                Creates a new module manifest.
     # Test-ModuleManifest               Verifies that a module manifest file accurately describes
     #                                   the contents of a module.
@@ -745,73 +744,74 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # Register-ArgumentCompleter        Registers a custom argument completer.
     # Set-PSDebug                       Turns script debugging features on and off, sets the trace
     #                                   level, and toggles strict mode.
-    # Set-StrictMode                    Establishes and enforces coding rules in expressions,
-    #                                   scripts, and script blocks.
     # TabExpansion2                     A helper function that wraps the CompleteInput() method
     #                                   of the CommandCompletion class to provide tab completion
     #                                   for PowerShell scripts.
 
-    # Import-Module Adds modules to the current session.
+    # Adds modules to the current session.
     Import_Module = CmdLet("Import-Module")
-    # New-Module    Creates a new dynamic module that exists only in memory.
+    # Creates a new dynamic module that exists only in memory.
     New_Module    = CmdLet("New-Module")
-    # Get-Module    List the modules imported in the current session or that can be imported
-    #               from the PSModulePath.
+    # List the modules imported in the current session or that can be imported
+    # from the PSModulePath.
     Get_Module    = CmdLet("Get-Module")
-    # Remove-Module Removes modules from the current session.
+    # Removes modules from the current session.
     Remove_Module = CmdLet("Remove-Module")
 
-    # Get-Command    Gets all commands.
+    # Gets all commands.
     Get_Command    = CmdLet("Get-Command")
-    # Invoke-Command Runs commands on local and remote computers.
+    # Runs commands on local and remote computers.
     Invoke_Command = CmdLet("Invoke-Command")
 
-    # ForEach-Object  Performs an operation against each item in a collection of input objects.
+    # Performs an operation against each item in a collection of input objects.
     _ForEach_Object = CmdLet("ForEach-Object")
 
     def ForEach_Object(self, InputObject: Any, **kwargs: Any) -> Any:
         return self._ForEach_Object(InputObject=InputObject, **kwargs)
 
-    # Where-Object  Selects objects from a collection based on their property values.
+    # Selects objects from a collection based on their property values.
     _Where_Object = CmdLet("Where-Object")
 
     def Where_Object(self, InputObject: Any, **kwargs: Any) -> Any:
         return self._Where_Object(InputObject=InputObject, **kwargs)
 
-    # Start-Job   Starts a PowerShell background job.
+    # Starts a PowerShell background job.
     Start_Job   = CmdLet("Start-Job",   flatten_result=True)
-    # Stop-Job    Stops a PowerShell background job.
+    # Stops a PowerShell background job.
     Stop_Job    = CmdLet("Stop-Job",    flatten_result=True)
-    # Get-Job     Gets PowerShell background jobs that are running in the current session.
+    # Gets PowerShell background jobs that are running in the current session.
     Get_Job     = CmdLet("Get-Job",     flatten_result=True)
-    # Wait-Job    Waits until one or all of the PowerShell jobs running in the session are in
-    #             a terminating state.
+    # Waits until one or all of the PowerShell jobs running in the session are in
+    # a terminating state.
     Wait_Job    = CmdLet("Wait-Job",    flatten_result=True)
-    # Receive-Job Gets the results of the PowerShell background jobs in the current session.
+    # Gets the results of the PowerShell background jobs in the current session.
     Receive_Job = CmdLet("Receive-Job", flatten_result=True)
-    # Remove-Job  Deletes a PowerShell background job.
+    # Deletes a PowerShell background job.
     Remove_Job  = CmdLet("Remove-Job")
-    # Debug-Job   Debugs a running background, remote, or Windows PowerShell Workflow job.
+    # Debugs a running background, remote, or Windows PowerShell Workflow job.
     Debug_Job   = CmdLet("Debug-Job")
 
-    # Clear-Host Clears the display in the host program.
+    # Clears the display in the host program.
     Clear_Host = CmdLet("Clear-Host")
 
-    # Get-Help    Displays information about PowerShell commands and concepts.
+    # Displays information about PowerShell commands and concepts.
     Get_Help    = CmdLet("Get-Help",    flatten_result=True)
-    # Update-Help Downloads and installs the newest help files on your computer.
+    # Downloads and installs the newest help files on your computer.
     Update_Help = CmdLet("Update-Help", flatten_result=True)
-    # Save-Help   Downloads and saves the newest help files to a file system directory.
+    # Downloads and saves the newest help files to a file system directory.
     Save_Help   = CmdLet("Save-Help",   flatten_result=True)
 
-    # Get-History    Gets a list of the commands entered during the current session.
+    # Gets a list of the commands entered during the current session.
     Get_History    = CmdLet("Get-History")
-    # Clear-History  Deletes entries from the PowerShell session command history.
+    # Deletes entries from the PowerShell session command history.
     Clear_History  = CmdLet("Clear-History", flatten_result=True)
-    # Add-History    Appends entries to the session history.
+    # Appends entries to the session history.
     Add_History    = CmdLet("Add-History")
-    # Invoke-History Runs commands from the session history.
+    # Runs commands from the session history.
     Invoke_History = CmdLet("Invoke-History")
+
+    # Establishes and enforces coding rules in expressions, scripts, and script blocks.
+    Set_StrictMode = CmdLet("Set-StrictMode")
 
     # Microsoft.PowerShell.Management
 
@@ -826,8 +826,6 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # Invoke-Item       Performs the default action on the specified item.
     # Join-Path         Combines a path and a child path into a single path.
     # Split-Path        Returns the specified part of a path.
-    # Get-Clipboard     Gets the current Windows clipboard entry.
-    # Set-Clipboard     Sets the current Windows clipboard entry.
     # Get-TimeZone      Gets the current time zone or a list of available time zones.
     # Set-TimeZone      Sets the system time zone to a specified time zone.
     # Test-Connection   Sends ICMP echo request packets, or pings, to one or more computers.
@@ -836,86 +834,88 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/
     #         about_providers?view=powershell-5.1
 
-    # Push-Location Adds the current location to the top of a location stack.
+    # Adds the current location to the top of a location stack.
     Push_Location = CmdLet("Push-Location")
-    # Pop-Location  Changes the current location to the location most recently pushed onto
-    #               the stack.
+    # Changes the current location to the location most recently pushed onto the stack.
     Pop_Location  = CmdLet("Pop-Location")
-    # Get-Location  Gets information about the current working location or a location stack.
+    # Gets information about the current working location or a location stack.
     Get_Location  = CmdLet("Get-Location")
-    # Set-Location  Sets the current working location to a specified location.
+    # Sets the current working location to a specified location.
     Set_Location  = CmdLet("Set-Location")
 
-    # Get-ChildItem Gets the items and child items in one or more specified locations.
+    # Gets the items and child items in one or more specified locations.
     Get_ChildItem = CmdLet("Get-ChildItem",
                            customize_result = lambda self, result: result or [])
 
-    # Get-Item    Gets the item at the specified location.
+    # Gets the item at the specified location.
     Get_Item    = CmdLet("Get-Item")
-    # New-Item    Creates a new item.
+    # Creates a new item.
     New_Item    = CmdLet("New-Item")
-    # Set-Item    Changes the value of an item to the value specified in the command.
+    # Changes the value of an item to the value specified in the command.
     Set_Item    = CmdLet("Set-Item")
-    # Copy-Item   Copies an item from one location to another.
+    # Copies an item from one location to another.
     Copy_Item   = CmdLet("Copy-Item")
-    # Move-Item   Moves an item from one location to another.
+    # Moves an item from one location to another.
     Move_Item   = CmdLet("Move-Item")
-    # Remove-Item Deletes the specified items.
+    # Deletes the specified items.
     Remove_Item = CmdLet("Remove-Item")
-    # Rename-Item Renames an item in a PowerShell provider namespace.
+    # Renames an item in a PowerShell provider namespace.
     Rename_Item = CmdLet("Rename-Item")
-    # Clear-Item  Clears the contents of an item, but does not delete the item.
+    # Clears the contents of an item, but does not delete the item.
     Clear_Item  = CmdLet("Clear-Item")
 
-    # Get-ItemProperty    Gets the properties of a specified item.
+    # Gets the properties of a specified item.
     Get_ItemProperty    = CmdLet("Get-ItemProperty")
-    # New-ItemProperty    Creates a new property for an item and sets its value.
+    # Creates a new property for an item and sets its value.
     New_ItemProperty    = CmdLet("New-ItemProperty")
-    # Set-ItemProperty    Creates or changes the value of a property of an item.
+    # Creates or changes the value of a property of an item.
     Set_ItemProperty    = CmdLet("Set-ItemProperty")
-    # Copy-ItemProperty   Copies a property and value from a specified location to another
-    #                     location.
+    # Copies a property and value from a specified location to another location.
     Copy_ItemProperty   = CmdLet("Copy-ItemProperty")
-    # Move-ItemProperty   Moves a property from one location to another.
+    # Moves a property from one location to another.
     Move_ItemProperty   = CmdLet("Move-ItemProperty")
-    # Remove-ItemProperty Deletes the property and its value from an item.
+    # Deletes the property and its value from an item.
     Remove_ItemProperty = CmdLet("Remove-ItemProperty", flatten_result=True)
-    # Rename-ItemProperty Renames a property of an item.
+    # Renames a property of an item.
     Rename_ItemProperty = CmdLet("Rename-ItemProperty", flatten_result=True)
-    # Clear-ItemProperty  Clears the value of a property but does not delete the property.
+    # Clears the value of a property but does not delete the property.
     Clear_ItemProperty  = CmdLet("Clear-ItemProperty",  flatten_result=True)
 
-    # Get-ItemPropertyValue  Gets the value for one or more properties of a specified item.
+    # Gets the value for one or more properties of a specified item.
     _Get_ItemPropertyValue = CmdLet("Get-ItemPropertyValue")
 
     def Get_ItemPropertyValue(self, **kwargs: Any) -> Sequence[Any]:
         return (self._Get_ItemPropertyValue(**kwargs)
                 if self.Get_ItemProperty(**kwargs) else [])
 
-    # Test-Path    Determines whether all elements of a path exist.
+    # Determines whether all elements of a path exist.
     Test_Path    = CmdLet("Test-Path",
                           customize_result = lambda self, result: bool(result[0]))
-    # Resolve-Path Resolves the wildcard characters in a path, and displays the path contents.
+    # Resolves the wildcard characters in a path, and displays the path contents.
     Resolve_Path = CmdLet("Resolve-Path")
-    # Convert-Path Converts a path from a PowerShell path to a PowerShell provider path.
+    # Converts a path from a PowerShell path to a PowerShell provider path.
     Convert_Path = CmdLet("Convert-Path")
 
-    # Get-Content   Gets the content of the item at the specified location.
+    # Gets the content of the item at the specified location.
     Get_Content   = CmdLet("Get-Content")
-    # Set-Content   Writes new content or replaces existing content in a file.
+    # Writes new content or replaces existing content in a file.
     Set_Content   = CmdLet("Set-Content")
-    # Add-Content   Adds content to the specified items, such as adding words to a file.
+    # Adds content to the specified items, such as adding words to a file.
     Add_Content   = CmdLet("Add-Content")
-    # Clear-Content Deletes the contents of an item, but does not delete the item.
+    # Deletes the contents of an item, but does not delete the item.
     Clear_Content = CmdLet("Clear-Content")
 
-    # Get-Process  Gets the processes that are running on the local computer or a remote
-    #              computer.
+    # Gets the current Windows clipboard entry.
+    Get_Clipboard = CmdLet("Get-Clipboard")
+    # Sets the current Windows clipboard entry.
+    Set_Clipboard = CmdLet("Set-Clipboard")
+
+    # Gets the processes that are running on the local computer or a remote computer.
     Get_Process  = CmdLet("Get-Process")
-    # Wait-Process Waits for the processes to be stopped before accepting more input.
+    # Waits for the processes to be stopped before accepting more input.
     Wait_Process = CmdLet("Wait-Process")
 
-    # Start-Process  Starts one or more processes on the local computer.
+    # Starts one or more processes on the local computer.
     _Start_Process = CmdLet("Start-Process")
 
     def Start_Process(self, **kwargs: Any) -> Any:
@@ -923,39 +923,39 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
             kwargs["ArgumentList"] = Array[String](kwargs["ArgumentList"])
         return self._Start_Process(**kwargs)
 
-    # Stop-Process  Stops one or more running processes.
+    # Stops one or more running processes.
     _Stop_Process = CmdLet("Stop-Process")
 
     def Stop_Process(self, **kwargs: Any) -> Any:
         Force = kwargs.pop("Force", True)
         return self._Stop_Process(Force=Force, **kwargs)
 
-    # Debug-Process Debugs one or more processes running on the local computer.
+    # Debugs one or more processes running on the local computer.
     Debug_Process = CmdLet("Debug-Process")
 
-    # New-Service     Creates a new Windows service.
+    # Creates a new Windows service.
     New_Service     = CmdLet("New-Service", flatten_result=True)
-    # Get-Service     Gets the services on a local or remote computer.
+    # Gets the services on a local or remote computer.
     Get_Service     = CmdLet("Get-Service")
-    # Start-Service   Starts one or more stopped services.
+    # Starts one or more stopped services.
     Start_Service   = CmdLet("Start-Service", flatten_result=True)
-    # Restart-Service Stops and then starts one or more services.
+    # Stops and then starts one or more services.
     Restart_Service = CmdLet("Restart-Service", flatten_result=True)
-    # Suspend-Service Suspends (pauses) one or more running services.
+    # Suspends (pauses) one or more running services.
     Suspend_Service = CmdLet("Suspend-Service", flatten_result=True)
-    # Resume-Service  Resumes one or more suspended (paused) services.
+    # Resumes one or more suspended (paused) services.
     Resume_Service  = CmdLet("Resume-Service", flatten_result=True)
-    # Set-Service     Starts, stops, and suspends a service, and changes its properties.
+    # Starts, stops, and suspends a service, and changes its properties.
     Set_Service     = CmdLet("Set-Service", flatten_result=True)
-    # Stop-Service    Stops one or more running services.
+    # Stops one or more running services.
     Stop_Service    = CmdLet("Stop-Service")
 
-    # Get-PSDrive    Gets drives in the current session.
+    # Gets drives in the current session.
     Get_PSDrive    = CmdLet("Get-PSDrive")
-    # New-PSDrive    Creates temporary and persistent drives that are associated with a location
-    #                in an item data store.
+    # Creates temporary and persistent drives that are associated with a location
+    # in an item data store.
     New_PSDrive    = CmdLet("New-PSDrive", flatten_result=True)
-    # Remove-PSDrive Deletes temporary PowerShell drives and disconnects mapped network drives.
+    # Deletes temporary PowerShell drives and disconnects mapped network drives.
     Remove_PSDrive = CmdLet("Remove-PSDrive", flatten_result=True)
 
     # Microsoft.PowerShell.Utility
@@ -998,7 +998,6 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # Import-PSSession          Imports commands from another session into the current session.
     # Measure-Command           Measures the time it takes to run script blocks and cmdlets.
     # New-Alias                 Creates a new alias.
-    # New-Guid                  Creates a GUID.
     # New-TemporaryFile         Creates a temporary file.
     # New-TimeSpan              Creates a TimeSpan object.
     # Out-File                  Sends output to a file.
@@ -1031,128 +1030,128 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # Wait-Debugger             Stops a script in the debugger before running the next statement
     #                           in the script.
 
-    Get_Verb = CmdLet("Get-Verb")
+    # Gets approved PowerShell verbs. (moved from Microsoft.PowerShell.Core for version > 5.1)
     # Get-Verb [[-verb] <String[]>]
+    Get_Verb = CmdLet("Get-Verb")
 
-    # Get-UICulture Gets the current UI culture settings in the operating system.
+    # Gets the current UI culture settings in the operating system.
     Get_UICulture = CmdLet("Get-UICulture", flatten_result=True)
 
     Get_Error = CmdLet("Get-Error")
 
-    # Get-Host Gets an object that represents the current host program.
+    # Gets an object that represents the current host program.
     Get_Host = CmdLet("Get-Host", flatten_result=True)
 
-    # Get-Date Gets the current date and time.
-    Get_Date = CmdLet("Get-Date")
-    # Set-Date Changes the system time on the computer to a time that you specify.
+    # Gets the current date and time.
+    Get_Date = CmdLet("Get-Date", flatten_result=True)
+    # Changes the system time on the computer to a time that you specify.
     Set_Date = CmdLet("Set-Date")
 
-    # Get-FileHash Computes the hash value for a file by using a specified hash algorithm.
+    # Computes the hash value for a file by using a specified hash algorithm.
     Get_FileHash = CmdLet("Get-FileHash")
 
-    # New-Variable    Creates a new variable.
+    # Creates a GUID.
+    New_Guid = CmdLet("New-Guid", flatten_result=True)
+
+    # Creates a new variable.
     New_Variable    = CmdLet("New-Variable")
-    # Get-Variable    Gets the variables in the current console.
+    # Gets the variables in the current console.
     Get_Variable    = CmdLet("Get-Variable")
-    # Set-Variable    Sets the value of a variable. Creates the variable if one with the
-    #                 requested name does not exist.
+    # Sets the value of a variable. Creates the variable if one with the
+    # requested name does not exist.
     Set_Variable    = CmdLet("Set-Variable")
-    # Clear-Variable  Deletes the value of a variable.
+    # Deletes the value of a variable.
     Clear_Variable  = CmdLet("Clear-Variable")
-    # Remove-Variable Deletes a variable and its value.
+    # Deletes a variable and its value.
     Remove_Variable = CmdLet("Remove-Variable")
 
-    # Invoke-Expression Runs commands or expressions on the local computer.
+    # Runs commands or expressions on the local computer.
     # Invoke-Expression [-Command] <String> [<CommonParameters>]
     Invoke_Expression = CmdLet("Invoke-Expression")
 
-    # Add-Type Adds a Microsoft .NET class to a PowerShell session.
+    # Adds a Microsoft .NET class to a PowerShell session.
     Add_Type = CmdLet("Add-Type")
 
-    # New-Object     Creates an instance of a Microsoft .NET Framework or COM object.
+    # Creates an instance of a Microsoft .NET Framework or COM object.
     New_Object     = CmdLet("New-Object")
-    # Select-Object  Selects objects or object properties.
+    # Selects objects or object properties.
     Select_Object  = CmdLet("Select-Object")
-    # Sort-Object    Sorts objects by property values.
+    # Sorts objects by property values.
     Sort_Object    = CmdLet("Sort-Object")
-    # Group-Object   Groups objects that contain the same value for specified properties.
+    # Groups objects that contain the same value for specified properties.
     Group_Object   = CmdLet("Group-Object")
-    # Compare-Object Compares two sets of objects.
+    # Compares two sets of objects.
     Compare_Object = CmdLet("Compare-Object")
-    # Get-Member     Gets the properties and methods of objects.
+    # Gets the properties and methods of objects.
     Get_Member     = CmdLet("Get-Member")
-    # Add-Member     Adds custom properties and methods to an instance of a PowerShell object.
+    # Adds custom properties and methods to an instance of a PowerShell object.
     Add_Member     = CmdLet("Add-Member")
 
-    # Set-Alias Creates or changes an alias for a cmdlet or other command in the current
-    #           PowerShell session.
+    # Creates or changes an alias for a cmdlet or other command in the current
+    # PowerShell session.
     Set_Alias = CmdLet("Set-Alias")
 
-    # Select-String Finds text in strings and files.
+    # Finds text in strings and files.
     Select_String = CmdLet("Select-String")  # , flatten_result=True)
-    # Select-Xml    Finds text in an XML string or document.
+    # Finds text in an XML string or document.
     Select_Xml    = CmdLet("Select-Xml")  # , flatten_result=True)
 
-    # Format-Hex    Displays a file or other input as hexadecimal.
+    # Displays a file or other input as hexadecimal.
     Format_Hex    = CmdLet("Format-Hex")
-    # Format-List   Formats the output as a list of properties in which each property appears
-    #               on a new line.
+    # Formats the output as a list of properties in which each property appears on a new line.
     Format_List   = CmdLet("Format-List")
-    # Format-Table  Formats the output as a table.
+    # Formats the output as a table.
     Format_Table  = CmdLet("Format-Table")
-    # Format-Wide   Formats objects as a wide table that displays only one property of each
-    #               object.
+    # Formats objects as a wide table that displays only one property of each object.
     Format_Wide   = CmdLet("Format-Wide")
-    # Format-Custom Uses a customized view to format the output.
+    # Uses a customized view to format the output.
     Format_Custom = CmdLet("Format-Custom")
 
-    # ConvertTo-Csv   Converts .NET objects into a series of character-separated value (CSV)
-    #                 strings.
+    # Converts .NET objects into a series of character-separated value (CSV) strings.
     ConvertTo_Csv   = CmdLet("ConvertTo-Csv")
-    # ConvertFrom-Csv Converts object properties in character-separated value (CSV) format into
-    #                 CSV versions of the original objects.
+    # Converts object properties in character-separated value (CSV) format into
+    # CSV versions of the original objects.
     ConvertFrom_Csv = CmdLet("ConvertFrom-Csv")
-    # Export-Csv      Converts objects into a series of character-separated value (CSV) strings
-    #                 and saves the strings to a file.
+    # Converts objects into a series of character-separated value (CSV) strings
+    # and saves the strings to a file.
     Export_Csv      = CmdLet("Export-Csv")
-    # Import-Csv      Creates table-like custom objects from the items in a character-separated
-    #                 value (CSV) file.
+    # Creates table-like custom objects from the items in a character-separated value (CSV) file.
     Import_Csv      = CmdLet("Import-Csv")
 
+    # Tests whether a string is a valid JSON document.
     Test_Json = CmdLet("Test-Json",
                        customize_result = lambda self, result: bool(result[0]))
-    # ConvertTo-Json   Converts an object to a JSON-formatted string.
+    # Converts an object to a JSON-formatted string.
     ConvertTo_Json   = CmdLet("ConvertTo-Json")
-    # ConvertFrom-Json Converts a JSON-formatted string to a custom object.
+    # Converts a JSON-formatted string to a custom object.
     ConvertFrom_Json = CmdLet("ConvertFrom-Json", flatten_result=True)
 
-    # ConvertTo-Xml Creates an XML-based representation of an object.
+    # Creates an XML-based representation of an object.
     ConvertTo_Xml = CmdLet("ConvertTo-Xml")
-    # Export-Clixml Creates an XML-based representation of an object or objects and stores it
-    #               in a file.
+    # Creates an XML-based representation of an object or objects and stores it in a file.
     Export_Clixml = CmdLet("Export-Clixml")
-    # Import-Clixml Imports a CLIXML file and creates corresponding objects in PowerShell.
+    # Imports a CLIXML file and creates corresponding objects in PowerShell.
     Import_Clixml = CmdLet("Import-Clixml")
 
-    # ConvertTo-Html Converts .NET objects into HTML that can be displayed in a Web browser.
+    # Converts .NET objects into HTML that can be displayed in a Web browser.
     ConvertTo_Html = CmdLet("ConvertTo-Html")
 
-    # Measure-Object Calculates the numeric properties of objects, and the characters, words,
-    #                and lines in string objects, such as files of text.
+    # Calculates the numeric properties of objects, and the characters, words,
+    # and lines in string objects, such as files of text.
     Measure_Object = CmdLet("Measure-Object")
 
-    # Invoke-WebRequest Gets content from a web page on the internet.
+    # Gets content from a web page on the internet.
     Invoke_WebRequest = CmdLet("Invoke-WebRequest", flatten_result=True)
-    # Invoke-RestMethod Sends an HTTP or HTTPS request to a RESTful web service.
+    # Sends an HTTP or HTTPS request to a RESTful web service.
     Invoke_RestMethod = CmdLet("Invoke-RestMethod", flatten_result=True)
 
-    # Start-Sleep Suspends the activity in a script or session for the specified period of time.
+    # Suspends the activity in a script or session for the specified period of time.
     Start_Sleep = CmdLet("Start-Sleep")
 
-    # Clear-RecycleBin Clears the contents of the current user's recycle bin.
+    # Clears the contents of the current user's recycle bin.
     Clear_RecycleBin = CmdLet("Clear-RecycleBin")
 
-    # Write-Host  Writes customized output to a host.
+    # Writes customized output to a host.
     _Write_Host = CmdLet("Write-Host", flatten_result=True)
 
     def Write_Host(self, Object: Any, **kwargs: Any) -> Any:
@@ -1165,7 +1164,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
         with self.Information(preference):
             return self._Write_Host(Object=Object, **kwargs)
 
-    # Write-Information  Specifies how PowerShell handles information stream data for a command.
+    # Specifies how PowerShell handles information stream data for a command.
     _Write_Information = CmdLet("Write-Information", flatten_result=True)
 
     def Write_Information(self, Msg: Any, **kwargs: Any) -> Any:
@@ -1174,7 +1173,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
         with self.Information(preference):
             return self._Write_Information(Msg=Msg, **kwargs)
 
-    # Write-Warning  Writes a warning message.
+    # Writes a warning message.
     _Write_Warning = CmdLet("Write-Warning", flatten_result=True)
 
     def Write_Warning(self, Msg: Any, **kwargs: Any) -> Any:
@@ -1183,13 +1182,13 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
         with self.Warning(preference):
             return self._Write_Warning(Msg=Msg, **kwargs)
 
-    # Write-Error  Writes an object to the error stream.
+    # Writes an object to the error stream.
     _Write_Error = CmdLet("Write-Error", flatten_result=True)
 
     def Write_Error(self, Msg: Any, **kwargs: Any) -> Any:
         return self._Write_Error(Msg=Msg, **kwargs)
 
-    # Write-Verbose  Writes text to the verbose message stream.
+    # Writes text to the verbose message stream.
     _Write_Verbose = CmdLet("Write-Verbose", flatten_result=True)
 
     def Write_Verbose(self, Msg: Any, **kwargs: Any) -> Any:
@@ -1199,7 +1198,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
         with self.Verbose(preference):
             return self._Write_Verbose(Msg=Msg, **kwargs)
 
-    # Write-Debug  Writes a debug message to the console.
+    # Writes a debug message to the console.
     _Write_Debug = CmdLet("Write-Debug", flatten_result=True)
 
     def Write_Debug(self, Msg: Any, **kwargs: Any) -> Any:
@@ -1209,7 +1208,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
         with self.Debug(preference):
             return self._Write_Debug(Msg=Msg, **kwargs)
 
-    # Write-Progress  Displays a progress bar within a PowerShell command window.
+    # Displays a progress bar within a PowerShell command window.
     _Write_Progress = CmdLet("Write-Progress", flatten_result=True)
 
     def Write_Progress(self, Activity: Any, **kwargs: Any) -> Any:
@@ -1217,13 +1216,13 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
         with self.Progress(preference):
             return self._Write_Progress(Activity=Activity, **kwargs)
 
-    # Write-Output  Writes the specified objects to the pipeline.
+    # Writes the specified objects to the pipeline.
     _Write_Output = CmdLet("Write-Output", flatten_result=True)
 
     def Write_Output(self, InputObject: Any, **kwargs: Any) -> Any:
         return self._Write_Output(InputObject=InputObject, **kwargs)
 
-    # Read-Host  Reads a line of input from the console.
+    # Reads a line of input from the console.
     _Read_Host = CmdLet("Read-Host", flatten_result=True)
 
     def Read_Host(self, Prompt: Any, **kwargs: Any) -> Any:
@@ -1264,80 +1263,79 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
 
     # Cmdlet              Description
     # ------              -----------
-    # Get-ExecutionPolicy Gets the execution policies for the current session.
+    # Gets the execution policies for the current session.
     Get_ExecutionPolicy = CmdLet("Get-ExecutionPolicy")
-    # Set-ExecutionPolicy Sets the PowerShell execution policies for Windows computers.
+    # Sets the PowerShell execution policies for Windows computers.
     Set_ExecutionPolicy = CmdLet("Set-ExecutionPolicy")
 
-    # Get-Credential Gets a credential object based on a user name and password.
+    # Gets a credential object based on a user name and password.
     Get_Credential = CmdLet("Get-Credential")
 
-    # Get-Acl Gets the security descriptor for a resource, such as a file or registry key.
+    # Gets the security descriptor for a resource, such as a file or registry key.
     Get_Acl = CmdLet("Get-Acl")
-    # Set-Acl Changes the security descriptor of a specified item, such as a file or a
-    #         registry key.
+    # Changes the security descriptor of a specified item, such as a file or a
+    # registry key.
     Set_Acl = CmdLet("Set-Acl")
 
-    # Get-CmsMessage       Gets content that has been encrypted by using the Cryptographic
-    #                      Message Syntax format.
+    # Gets content that has been encrypted by using the Cryptographic
+    # Message Syntax format.
     Get_CmsMessage       = CmdLet("Get-CmsMessage")
-    # Protect-CmsMessage   Encrypts content by using the Cryptographic Message Syntax format.
+    # Encrypts content by using the Cryptographic Message Syntax format.
     Protect_CmsMessage   = CmdLet("Protect-CmsMessage")
-    # Unprotect-CmsMessage Decrypts content that has been encrypted by using the Cryptographic
-    #                      Message Syntax format.
+    # Decrypts content that has been encrypted by using the Cryptographic
+    # Message Syntax format.
     Unprotect_CmsMessage = CmdLet("Unprotect-CmsMessage")
 
-    # ConvertTo-SecureString   Converts plain text or encrypted strings to secure strings.
+    # Converts plain text or encrypted strings to secure strings.
     ConvertTo_SecureString   = CmdLet("ConvertTo-SecureString")
-    # ConvertFrom-SecureString Converts a secure string to an encrypted standard string.
+    # Converts a secure string to an encrypted standard string.
     ConvertFrom_SecureString = CmdLet("ConvertFrom-SecureString")
 
-    # Get-PfxCertificate Gets information about PFX certificate files on the computer.
+    # Gets information about PFX certificate files on the computer.
     Get_PfxCertificate = CmdLet("Get-PfxCertificate")
 
-    # Get-AuthenticodeSignature Gets information about the Authenticode signature for a file.
+    # Gets information about the Authenticode signature for a file.
     Get_AuthenticodeSignature = CmdLet("Get-AuthenticodeSignature")
-    # Set-AuthenticodeSignature Adds an Authenticode signature to a PowerShell script or other
-    #                           file.
+    # Adds an Authenticode signature to a PowerShell script or other file.
     Set_AuthenticodeSignature = CmdLet("Set-AuthenticodeSignature")
 
-    # New-FileCatalog  Creates a Windows catalog file containing cryptographic hashes for files
-    #                  and folders in the specified paths.
+    # Creates a Windows catalog file containing cryptographic hashes for files
+    # and folders in the specified paths.
     New_FileCatalog  = CmdLet("New-FileCatalog")
-    # Test-FileCatalog Test-FileCatalog validates whether the hashes contained in a catalog file
-    #                  (.cat) matches the hashes of the actual files in order to validate their
-    #                  authenticity. This cmdlet is only supported on Windows.
+    # Test-FileCatalog validates whether the hashes contained in a catalog file
+    # (.cat) matches the hashes of the actual files in order to validate their
+    # authenticity. This cmdlet is only supported on Windows.
     Test_FileCatalog = CmdLet("Test-FileCatalog")
 
     # Microsoft.PowerShell.Host
 
     # Cmdlet           Description
     # ------           -----------
-    # Start-Transcript Creates a record of all or part of a PowerShell session to a text file.
+    # Creates a record of all or part of a PowerShell session to a text file.
     Start_Transcript = CmdLet("Start-Transcript")
-    # Stop-Transcript  Stops a transcript.
+    # Stops a transcript.
     Stop_Transcript  = CmdLet("Stop-Transcript")
 
     # Microsoft.PowerShell.Archive
 
     # Cmdlet           Description
     # ------           -----------
-    # Compress-Archive Creates a compressed archive, or zipped file, from specified files
-    #                  and directories.
+    # Creates a compressed archive, or zipped file, from specified files
+    # and directories.
     Compress_Archive = CmdLet("Compress-Archive")
-    # Expand-Archive   Extracts files from a specified archive (zipped) file.
+    # Extracts files from a specified archive (zipped) file.
     Expand_Archive   = CmdLet("Expand-Archive")
 
     # Microsoft.PowerShell.Diagnostics
 
     # Cmdlet       Description
     # ------       -----------
-    # Get-Counter  Gets performance counter data from local and remote computers.
+    # Gets performance counter data from local and remote computers.
     Get_Counter  = CmdLet("Get-Counter")
-    # Get-WinEvent Gets events from event logs and event tracing log files on local and
-    #              remote computers.
+    # Gets events from event logs and event tracing log files on local and
+    # remote computers.
     Get_WinEvent = CmdLet("Get-WinEvent")
-    # New-WinEvent Creates a new Windows event for the specified event provider.
+    # Creates a new Windows event for the specified event provider.
     New_WinEvent = CmdLet("New-WinEvent")
 
     # Module: ThreadJob
@@ -1346,7 +1344,7 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
 
     # Module: DISM
 
-    # Get-WindowsEdition             Gets edition information about a Windows image.
+    # Gets edition information about a Windows image.
     Get_WindowsEdition             = CmdLet("Get-WindowsEdition",
                                             flatten_result=True)
     Get_WindowsOptionalFeature     = CmdLet("Get-WindowsOptionalFeature",
@@ -1380,42 +1378,75 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
     # New-CimSession              Creates a CIM session.
     # Remove-CimSession           Removes one or more CIM sessions.
 
-    # New-CimInstance    Creates a CIM instance.
+    # Creates a CIM instance.
     New_CimInstance    = CmdLet("New-CimInstance")
-    # Get-CimInstance    Gets the CIM instances of a class from a CIM server.
+    # Gets the CIM instances of a class from a CIM server.
     Get_CimInstance    = CmdLet("Get-CimInstance")
-    # Set-CimInstance    Modifies a CIM instance on a CIM server by calling the ModifyInstance
-    #                    method of the CIM class.
+    # Modifies a CIM instance on a CIM server by calling the ModifyInstance
+    # method of the CIM class.
     Set_CimInstance    = CmdLet("Set-CimInstance")
-    # Remove-CimInstance Removes a CIM instance from a computer.
+    # Removes a CIM instance from a computer.
     Remove_CimInstance = CmdLet("Remove-CimInstance")
-    # Invoke-CimMethod   Invokes a method of a CIM class.
+    # Invokes a method of a CIM class.
     Invoke_CimMethod   = CmdLet("Invoke-CimMethod")
 
     # Module: ScheduledTasks
 
-    # Cmdlet                             Description
-    # ------                             -----------
-    # Enable-ScheduledTask              Enables a scheduled task.
-    # Disable-ScheduledTask             Disables a scheduled task.
-    # Register-ScheduledTask            Registers a scheduled task definition on a local computer.
-    # Unregister-ScheduledTask          Unregisters a scheduled task.
-    # Export-ScheduledTask              Exports a scheduled task as an XML string.
-    # Get-ScheduledTask                 Gets the task definition object of a scheduled task
-    #                                   that is registered on the local computer.
-    # Get-ScheduledTaskInfo             Gets run-time information for a scheduled task.
-    # New-ScheduledTask                 Creates a scheduled task instance.
-    # New-ScheduledTaskAction           Creates a scheduled task action.
-    # New-ScheduledTaskPrincipal        Creates an object that contains a scheduled task principal.
-    # New-ScheduledTaskSettingsSet      Creates a new scheduled task settings object.
-    # New-ScheduledTaskTrigger          Creates a scheduled task trigger object.
-    # Set-ScheduledTask                 Modifies a scheduled task.
-    # Start-ScheduledTask               Starts one or more instances of a scheduled task.
-    # Stop-ScheduledTask                Stops all running instances of a task.
-    # Register-ClusteredScheduledTask   Registers a scheduled task on a failover cluster.
-    # Unregister-ClusteredScheduledTask Removes a scheduled task from a failover cluster.
-    # Get-ClusteredScheduledTask        Gets clustered scheduled tasks for a failover cluster.
-    # Set-ClusteredScheduledTask        Changes settings for a clustered scheduled task.
+    # Cmdlet                       Description
+    # ------                       -----------
+
+    # Creates a scheduled task action.
+    _New_ScheduledTaskAction = CmdLet("New-ScheduledTaskAction", flatten_result=True)
+
+    def New_ScheduledTaskAction(self, **kwargs: Any) -> Any:
+        if "Argument" in kwargs:
+            kwargs["Argument"] = " ".join(kwargs["Argument"])
+        return self._New_ScheduledTaskAction(**kwargs)
+
+    # Creates a scheduled task trigger object.
+    New_ScheduledTaskTrigger     = CmdLet("New-ScheduledTaskTrigger", flatten_result=True)
+    # Creates an object that contains a scheduled task principal.
+    New_ScheduledTaskPrincipal   = CmdLet("New-ScheduledTaskPrincipal", flatten_result=True)
+    # Creates a new scheduled task settings object.
+    New_ScheduledTaskSettingsSet = CmdLet("New-ScheduledTaskSettingsSet", flatten_result=True)
+    # Creates a scheduled task instance.
+    New_ScheduledTask            = CmdLet("New-ScheduledTask", flatten_result=True)
+
+    # Registers a scheduled task definition on a local computer.
+    Register_ScheduledTask   = CmdLet("Register-ScheduledTask", flatten_result=True)
+    # Unregisters a scheduled task.
+    Unregister_ScheduledTask = CmdLet("Unregister-ScheduledTask")
+
+    # Gets the task definition object of a scheduled task
+    # that is registered on the local computer.
+    Get_ScheduledTask     = CmdLet("Get-ScheduledTask")
+    # Modifies a scheduled task.
+    Set_ScheduledTask     = CmdLet("Set-ScheduledTask")
+    # Exports a scheduled task as an XML string.
+    Export_ScheduledTask  = CmdLet("Export-ScheduledTask")
+    # Gets run-time information for a scheduled task.
+    Get_ScheduledTaskInfo = CmdLet("Get-ScheduledTaskInfo", flatten_result=True)
+
+    # Starts one or more instances of a scheduled task.
+    Start_ScheduledTask = CmdLet("Start-ScheduledTask")
+    # Stops all running instances of a task.
+    Stop_ScheduledTask  = CmdLet("Stop-ScheduledTask")
+
+    # Enables a scheduled task.
+    Enable_ScheduledTask  = CmdLet("Enable-ScheduledTask")
+    # Disables a scheduled task.
+    Disable_ScheduledTask = CmdLet("Disable-ScheduledTask")
+
+    # Registers a scheduled task on a failover cluster.
+    Register_ClusteredScheduledTask   = CmdLet("Register-ClusteredScheduledTask",
+                                               flatten_result=True)
+    # Removes a scheduled task from a failover cluster.
+    Unregister_ClusteredScheduledTask = CmdLet("Unregister-ClusteredScheduledTask")
+
+    # Gets clustered scheduled tasks for a failover cluster.
+    Get_ClusteredScheduledTask = CmdLet("Get-ClusteredScheduledTask")
+    # Changes settings for a clustered scheduled task.
+    Set_ClusteredScheduledTask = CmdLet("Set-ClusteredScheduledTask")
 
     # Module: Wdac
 
@@ -1494,5 +1525,5 @@ class PowerShell(ProxyBase):  # type: ignore[misc]
 
 
 global ps
-ps = PowerShell()
+ps: PowerShell = PowerShell()
 ps.Set_ExecutionPolicy(ExecutionPolicy="Bypass", Scope="Process", Force=True)

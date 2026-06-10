@@ -7,7 +7,7 @@ requires = [ "setuptools>=81.0.0", "packaging>=26.2.0" ]
 
 [project]
 name = "pwsh"
-version = "0.6.1"
+version = "0.7.0"
 description = "Provides API for PowerShell."
 keywords = [ "powershell", "pwsh" ]
 license = "Zlib"
@@ -37,6 +37,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
@@ -53,9 +54,10 @@ dependencies = [
   "py-utlx>=2.4.0",
   "nocasedict>=2.2.0",
   "zope.proxy>=7.2.0",
-  "pythonnet>=3.1.0",
+  "pythonnet>=3.1.0; python_version<'3.15'",
+  "pythonnet315-whl>=3.2.0.dev0; python_version>='3.15'",
   "colored>=2.3.2",
-  "tqdm>=4.68.1",
+  "tqdm>=4.68.2",
 ]
 
 [dependency-groups]

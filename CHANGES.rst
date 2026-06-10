@@ -1,6 +1,46 @@
 Changelog
 =========
 
+0.7.0 (2026-06-10)
+------------------
+- Added CmdLets:
+
+  + Module: Microsoft.PowerShell.Core
+  +   Set_StrictMode
+  + Module: Microsoft.PowerShell.Management
+  +   Get_Clipboard
+  +   Set_Clipboard
+  + Module: Microsoft.PowerShell.Utility
+  +   New_Guid
+  + Module: ScheduledTasks
+  +   New_ScheduledTaskAction
+  +   New_ScheduledTaskTrigger
+  +   New_ScheduledTaskPrincipal
+  +   New_ScheduledTaskSettingsSet
+  +   New_ScheduledTask
+  +   Register_ScheduledTask
+  +   Unregister_ScheduledTask
+  +   Get_ScheduledTask
+  +   Set_ScheduledTask
+  +   Export_ScheduledTask
+  +   Get_ScheduledTaskInfo
+  +   Start_ScheduledTask
+  +   Stop_ScheduledTask
+  +   Enable_ScheduledTask
+  +   Disable_ScheduledTask
+  +   Register_ClusteredScheduledTask
+  +   Unregister_ClusteredScheduledTask
+  +   Get_ClusteredScheduledTask
+  +   Set_ClusteredScheduledTask
+
+- Updated and fixed CmdLets:
+
+  + Module: Microsoft.PowerShell.Utility
+  +   Get_Date - now returns proper object, not array.
+
+- PSCustomObjectProxy is now importable.
+- Added support for Python 3.15
+
 0.6.1 (2026-06-05)
 ------------------
 - Dropped support for Python 3.10 (due to compatibility issues).
