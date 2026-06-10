@@ -1,8 +1,0 @@
-Url:       https://www.nuget.org/api/v2/package/System.Runtime.CompilerServices.Unsafe
-Url redir: https://globalcdn.nuget.org/packages/system.runtime.compilerservices.unsafe.6.1.2.nupkg?packageVersion=6.1.2
-Completed: 2025-08-29 09:21:48
-File name: system.runtime.compilerservices.unsafe.6.1.2.nupkg
-File date: Fri, 04 Apr 2025 18:06:58 GMT
-File size: 75106
-SHA256sum: 5F6A7F53AF3465F92BEB6DA873EBE0E496206C313313B98BADEE4355A6B25937
-SHA1sum:   94EE5E9C9651E2F03452A6C71C90A41A54B224D9

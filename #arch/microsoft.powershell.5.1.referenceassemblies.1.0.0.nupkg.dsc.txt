@@ -1,8 +1,0 @@
-Url:       https://www.nuget.org/api/v2/package/Microsoft.PowerShell.5.1.ReferenceAssemblies
-Url redir: https://globalcdn.nuget.org/packages/microsoft.powershell.5.1.referenceassemblies.1.0.0.nupkg?packageVersion=1.0.0
-Completed: 2025-08-29 09:22:27
-File name: microsoft.powershell.5.1.referenceassemblies.1.0.0.nupkg
-File date: Mon, 03 Dec 2018 22:58:25 GMT
-File size: 2456653
-SHA256sum: E3E161AC97B22FCF62436A9BC0295F89B231FD2E9BF390AD47F72D10914A2D95
-SHA1sum:   58043F9A27676BE8E12DCB80E53CA85968DA6278

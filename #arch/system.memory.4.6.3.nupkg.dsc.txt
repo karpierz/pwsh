@@ -1,8 +1,0 @@
-Url:       https://www.nuget.org/api/v2/package/System.Memory
-Url redir: https://globalcdn.nuget.org/packages/system.memory.4.6.3.nupkg?packageVersion=4.6.3
-Completed: 2025-08-29 09:19:43
-File name: system.memory.4.6.3.nupkg
-File date: Fri, 04 Apr 2025 18:07:27 GMT
-File size: 192935
-SHA256sum: 26078AEB758C9AE985E8BF851F973026061DA6A5EB4837204D0C2D2204C72955
-SHA1sum:   B55D3B2346FB0F5D278751596DD7A7EE61B29FE6
